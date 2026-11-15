@@ -1,0 +1,841 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>الفيزياء للصف الثالث الثانوي – الحث الكهرومغناطيسي (كتاب تفاعلي)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+<script type="importmap">
+{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}
+</script>
+<style>
+:root{--ui:#1d1a17;--ink:#2b2622;--acc:#e2a33b;--acc2:#2f7dd1;--ok:#2e9e5b;--bad:#d4473f}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;overflow:hidden;font-family:'Cairo',system-ui,sans-serif;color:#f5efe6;background:#2a1a10}
+button{font-family:inherit}
+/* ---------- desk ---------- */
+#desk{position:fixed;inset:0;overflow:hidden;
+ background:
+  radial-gradient(ellipse 70% 60% at 50% 42%, rgba(255,214,150,.42), rgba(255,190,110,.12) 45%, rgba(0,0,0,0) 70%),
+  radial-gradient(ellipse 120% 90% at 50% 40%, rgba(0,0,0,0) 40%, rgba(0,0,0,.55) 100%),
+  url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='900' height='900'><filter id='f'><feTurbulence type='fractalNoise' baseFrequency='0.004 0.09' numOctaves='4' seed='7'/><feColorMatrix values='0 0 0 0 0.42  0 0 0 0 0.25  0 0 0 0 0.13  0 0 0 0.55 0'/></filter><rect width='100%' height='100%' filter='url(%23f)'/></svg>"),
+  repeating-linear-gradient(90deg, #6e4325 0 3px, #74482a 3px 9px, #6a4023 9px 14px, #7a4c2c 14px 22px),
+  #6e4325;
+ background-size:auto,auto,900px 900px,auto,auto}
+#desk:before{content:"";position:absolute;inset:0;background:repeating-linear-gradient(90deg,rgba(0,0,0,0) 0 239px,rgba(0,0,0,.25) 239px 241px,rgba(0,0,0,0) 241px 240px);pointer-events:none}
+#lamp{position:absolute;top:30px;left:1vw;width:min(220px,30vw);pointer-events:none;filter:drop-shadow(0 10px 18px rgba(0,0,0,.5));z-index:1}
+#glow{position:absolute;pointer-events:none;inset:0;background:radial-gradient(circle at 12% 6%, rgba(255,230,170,.35), rgba(255,220,150,0) 30%);mix-blend-mode:screen}
+/* ---------- toolbar ---------- */
+#bar{position:fixed;top:0;left:0;right:0;height:54px;display:flex;align-items:center;gap:8px;padding:0 12px;z-index:20;
+ background:linear-gradient(rgba(20,13,8,.85),rgba(20,13,8,.55));backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);border-bottom:1px solid rgba(255,255,255,.08)}
+#bar .ttl{font-weight:800;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1;min-width:0}
+#bar .ttl small{font-weight:600;opacity:.65;font-size:12px;margin-inline-start:6px}
+.tb{display:inline-flex;align-items:center;gap:6px;height:36px;padding:0 12px;border-radius:18px;border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.07);color:#fff;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap}
+.tb:hover{background:rgba(255,255,255,.14)}
+.tb.on{background:var(--acc);color:#2b1a05;border-color:var(--acc)}
+.tb svg{width:18px;height:18px;flex:none}
+@media (max-width:640px){#hint{font-size:12px}.tb .lbl{display:none}.tb{padding:0 10px}#bar .ttl small{display:none}#bar .ttl{font-size:13px}}
+/* ---------- stage / book ---------- */
+#stage{position:fixed;top:54px;bottom:58px;left:0;right:0;perspective:1900px;perspective-origin:50% 10%;display:flex;align-items:center;justify-content:center;z-index:2}
+#stage.zoomed{overflow:auto;display:block;perspective:none;touch-action:pan-x pan-y}
+#bookwrap{position:relative;transform-style:preserve-3d;transition:transform .7s cubic-bezier(.3,.8,.3,1);touch-action:pan-y}
+#stage.zoomed #bookwrap{margin:24px auto;transition:none;touch-action:auto}
+#bookwrap.tilt{transform:rotateX(24deg) translateY(-2%)}
+body.single #bookwrap.tilt{transform:rotateX(14deg)}
+#book{position:relative;transform-style:preserve-3d}
+#book:after{content:"";position:absolute;left:4%;right:4%;bottom:-3%;height:8%;background:radial-gradient(ellipse at center,rgba(0,0,0,.55),rgba(0,0,0,0) 70%);transform:translateZ(-2px);pointer-events:none}
+.slot{position:absolute;top:0;transform-style:preserve-3d}
+.page{position:absolute;inset:0;background:#fff;overflow:hidden;user-select:none;-webkit-user-select:none}
+.page img{position:absolute;inset:0;width:100%;height:100%;display:block;pointer-events:none;-webkit-user-drag:none}
+.slot.L .page{box-shadow:-1px 1px 0 #e9e4da,-2px 2px 0 #d8d2c5,-3px 3px 0 #e9e4da,-4px 4px 0 #cfc8b9,-6px 7px 14px rgba(0,0,0,.45)}
+.slot.R .page{box-shadow:1px 1px 0 #e9e4da,2px 2px 0 #d8d2c5,3px 3px 0 #e9e4da,4px 4px 0 #cfc8b9,6px 7px 14px rgba(0,0,0,.45)}
+.slot.S .page{box-shadow:1px 1px 0 #e9e4da,2px 2px 0 #d8d2c5,3px 3px 0 #e9e4da,4px 4px 0 #cfc8b9,0 8px 18px rgba(0,0,0,.5)}
+.spine{position:absolute;top:0;bottom:0;width:9%;pointer-events:none;z-index:3}
+.slot.L .spine{right:0;background:linear-gradient(to left,rgba(0,0,0,.28),rgba(0,0,0,.08) 35%,rgba(0,0,0,0))}
+.slot.R .spine{left:0;background:linear-gradient(to right,rgba(0,0,0,.28),rgba(0,0,0,.08) 35%,rgba(0,0,0,0))}
+.slot.S .spine{display:none}
+.leafshadow{position:absolute;top:0;bottom:0;pointer-events:none;opacity:0;z-index:4}
+/* hotspot */
+.hs{position:absolute;z-index:2;cursor:pointer;background:#fff;border-radius:3px}
+.hs canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+.hs .badge{position:absolute;top:4px;left:4px;font-size:clamp(8px,1.25vw,12px);font-weight:800;color:#fff;background:linear-gradient(135deg,#2f7dd1,#6a4fd8);padding:1px 8px;border-radius:10px;box-shadow:0 2px 6px rgba(47,125,209,.45);pointer-events:none;animation:pulse 2.4s infinite}
+.hs:hover{outline:2px solid rgba(47,125,209,.55);outline-offset:2px}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
+/* leaf */
+.leaf{position:absolute;top:0;left:0;transform-style:preserve-3d;pointer-events:none;z-index:10}
+.strip{position:absolute;top:0;transform-style:preserve-3d;transform-origin:100% 50%}
+.face{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;background-color:#fff;background-repeat:no-repeat}
+.face.back{transform:rotateY(180deg)}
+.face i{position:absolute;inset:0;background:#000;opacity:0}
+/* ---------- nav ---------- */
+#nav{position:fixed;bottom:0;left:0;right:0;height:58px;display:flex;align-items:center;justify-content:center;gap:14px;z-index:20;background:linear-gradient(rgba(20,13,8,0),rgba(20,13,8,.75))}
+.nb{width:44px;height:44px;border-radius:50%;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.1);color:#fff;cursor:pointer;display:grid;place-items:center}
+.nb:disabled{opacity:.3;cursor:default}
+.nb svg{width:22px;height:22px}
+#pinfo{min-width:150px;text-align:center;font-weight:700;font-size:14px}
+#pinfo small{display:block;opacity:.6;font-size:11px;font-weight:600}
+.side-arrow{position:fixed;top:50%;z-index:15;width:46px;height:90px;margin-top:-45px;border:none;background:rgba(0,0,0,.25);color:#fff;cursor:pointer;display:grid;place-items:center}
+.side-arrow:disabled{opacity:0;pointer-events:none}
+.side-arrow svg{width:26px;height:26px}
+#sideNext{left:0;border-radius:0 12px 12px 0}
+#sidePrev{right:0;border-radius:12px 0 0 12px}
+body.single .side-arrow{display:none}
+/* ---------- drawers ---------- */
+.drawer{position:fixed;top:54px;bottom:0;right:0;width:min(360px,92vw);z-index:30;background:#1f1712;border-left:1px solid rgba(255,255,255,.1);transform:translateX(105%);transition:transform .35s cubic-bezier(.3,.8,.3,1);overflow:auto;padding:16px 16px 30px;box-shadow:-10px 0 30px rgba(0,0,0,.5)}
+.drawer.open{transform:none}
+.drawer h3{margin:4px 0 4px;font-size:17px}
+.drawer .note{font-size:12px;opacity:.6;margin-bottom:12px}
+.drawer .grp{font-size:12px;font-weight:800;color:var(--acc);margin:16px 0 6px}
+.drawer .it{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;cursor:pointer;font-size:14px;font-weight:600;background:rgba(255,255,255,.04);margin-bottom:6px;border:1px solid transparent}
+.drawer .it:hover{border-color:rgba(255,255,255,.18)}
+.drawer .it .pg{flex:none;font-size:12px;font-weight:800;background:rgba(255,255,255,.1);padding:2px 9px;border-radius:9px}
+.drawer .it .sub{display:block;font-size:12px;opacity:.6;font-weight:600}
+.drawer .it.mdl .pg{background:#2f7dd1}
+#scrim{position:fixed;inset:0;z-index:25;background:rgba(0,0,0,.35);opacity:0;pointer-events:none;transition:opacity .3s}
+#scrim.on{opacity:1;pointer-events:auto}
+#hint{position:fixed;z-index:22;bottom:70px;line-height:1.6;left:50%;transform:translateX(-50%);background:rgba(20,13,8,.92);border:1px solid rgba(255,255,255,.15);padding:10px 16px;border-radius:14px;font-size:13px;max-width:92vw;text-align:center;transition:opacity .5s}
+/* ---------- modal ---------- */
+#modal{position:fixed;inset:0;z-index:50;display:none}
+#modal.on{display:block}
+#mback{position:absolute;inset:0;background:rgba(12,8,5,.72);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);opacity:0;transition:opacity .45s}
+#modal.show #mback{opacity:1}
+#mcard{position:absolute;background:#fbf8f2;color:var(--ink);border-radius:16px;overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,.6);display:grid;grid-template-columns:1fr 320px;grid-template-rows:auto 1fr;transform-origin:0 0}
+#mhead{grid-column:1/-1;display:flex;align-items:center;gap:8px;padding:8px 12px;background:#fff;border-bottom:1px solid #e8e1d4;flex-wrap:wrap}
+#mhead .t{flex:1;min-width:160px;font-weight:800;font-size:15px;line-height:1.3}
+#mhead .t small{display:block;font-weight:600;font-size:12px;color:#8a7f70}
+.mb{display:inline-flex;align-items:center;gap:5px;height:34px;padding:0 12px;border-radius:17px;border:1px solid #ddd3c2;background:#f6f1e8;color:var(--ink);font-weight:700;font-size:13px;cursor:pointer;white-space:nowrap}
+.mb:hover{background:#efe7da}
+.mb.on{background:#2f7dd1;border-color:#2f7dd1;color:#fff}
+.mb.pri{background:#2b2622;color:#fff;border-color:#2b2622}
+.mb svg{width:16px;height:16px}
+#mview{position:relative;min-height:0;background:radial-gradient(circle at 50% 40%,#fff,#f1ebe0)}
+#mview canvas{display:block;width:100%;height:100%;touch-action:none}
+#labels{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+.lab{position:absolute;transform:translate(-50%,-120%);background:rgba(43,38,34,.88);color:#fff;font-size:12px;font-weight:700;padding:2px 9px;border-radius:9px;white-space:nowrap;pointer-events:auto;cursor:pointer}
+.lab:after{content:"";position:absolute;left:50%;bottom:-5px;margin-left:-5px;border:5px solid transparent;border-top-color:rgba(43,38,34,.88);border-bottom:0}
+#info{position:absolute;left:10px;right:10px;bottom:10px;background:#fff;border:1px solid #e3d9c7;border-radius:12px;padding:10px 14px;box-shadow:0 10px 30px rgba(0,0,0,.15);font-size:14px;line-height:1.75;display:none;max-height:45%;overflow:auto}
+#info b{color:#2f7dd1;font-size:15px}
+#info .src{font-size:11px;color:#8a7f70;display:block;margin-top:2px}
+#info .x{float:left;border:none;background:none;font-size:20px;line-height:1;cursor:pointer;color:#8a7f70}
+#readout{position:absolute;top:10px;right:10px;background:rgba(255,255,255,.92);border:1px solid #e3d9c7;border-radius:12px;padding:8px 12px;font-size:13px;line-height:1.6;max-width:min(320px,70%);direction:rtl}
+#readout .f{font-family:'Times New Roman',serif;font-size:16px;font-weight:700;direction:ltr;display:inline-block}
+.meter{height:8px;background:#ece5d8;border-radius:4px;position:relative;overflow:hidden;margin:3px 0;direction:ltr}
+.meter i{position:absolute;top:0;bottom:0;left:50%;background:#2f7dd1;border-radius:4px}
+#bookfig{position:absolute;top:10px;left:10px;background:#fff;border:1px solid #e3d9c7;border-radius:10px;padding:6px;box-shadow:0 10px 30px rgba(0,0,0,.2);display:none;max-width:48%;max-height:70%}
+#bookfig canvas{display:block;max-width:100%;max-height:calc(70vh - 60px);width:auto;height:auto}
+#bookfig div{font-size:12px;font-weight:700;color:#8a7f70;padding:2px 4px 6px}
+#mpanel{overflow:auto;padding:12px 14px 20px;border-right:1px solid #e8e1d4;background:#fbf8f2}
+#mpanel h4{margin:10px 0 6px;font-size:13px;color:#8a7f70}
+.ctl{margin-bottom:12px}
+.ctl label{display:flex;justify-content:space-between;font-size:13px;font-weight:700;margin-bottom:4px}
+.ctl label span{color:#2f7dd1}
+.ctl input[type=range]{width:100%;accent-color:#2f7dd1;direction:ltr}
+.ctl .hint{font-size:11.5px;color:#7c7164;line-height:1.6;margin-top:3px}
+.btns{display:flex;flex-wrap:wrap;gap:6px}
+.btns .mb{flex:1 1 auto;justify-content:center}
+.seg{display:flex;gap:4px;flex-wrap:wrap}
+.seg .mb{flex:1;justify-content:center;padding:0 6px;font-family:'Times New Roman',serif;font-style:italic;font-size:15px}
+.casebox{background:#fff;border:1px solid #e3d9c7;border-radius:10px;padding:8px 10px;font-size:13px;line-height:1.75;margin-top:8px}
+.quiz{background:#fff;border:2px solid #2f7dd1;border-radius:12px;padding:12px;font-size:14px;line-height:1.8}
+.quiz .qn{font-size:12px;color:#8a7f70;font-weight:700}
+.quiz .q{font-weight:800;margin:4px 0 8px}
+.quiz .fb{font-weight:800;min-height:24px}
+.quiz .fb.ok{color:var(--ok)}.quiz .fb.bad{color:var(--bad)}
+.quiz .score{font-size:30px;font-weight:800;color:#2f7dd1;text-align:center}
+@media (max-width:820px), (max-aspect-ratio:1/1){
+ #mcard{grid-template-columns:1fr;grid-template-rows:auto minmax(0,1fr) minmax(0,40%)}
+ #mpanel{border-right:none;border-top:1px solid #e8e1d4}
+ #readout{font-size:12px;padding:6px 10px}
+ #mhead{gap:6px;padding:8px 10px}
+ #mhead .t{font-size:13px;flex-basis:100%}
+ #mhead .t small{display:none}
+ #mhead .mb{flex:1;justify-content:center}
+ .mb{height:32px;padding:0 8px;font-size:12px}
+ .mb svg{display:none}
+ #readout{max-width:62%}
+ #readout .f{font-size:14px}
+}
+</style>
+</head>
+<body>
+<div id="desk">
+ <svg id="lamp" viewBox="0 0 260 230" aria-hidden="true">
+  <defs><linearGradient id="lg" x1="0" x2="1"><stop offset="0" stop-color="#1c1d21"/><stop offset=".45" stop-color="#5b5d64"/><stop offset="1" stop-color="#18191c"/></linearGradient>
+  <linearGradient id="sh" x1="0" x2="1"><stop offset="0" stop-color="#202126"/><stop offset=".4" stop-color="#6a6c73"/><stop offset=".7" stop-color="#3a3b40"/><stop offset="1" stop-color="#16171a"/></linearGradient>
+  <radialGradient id="bulb" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#fffdf0"/><stop offset=".5" stop-color="#ffeab0"/><stop offset="1" stop-color="#ffd27a" stop-opacity="0"/></radialGradient></defs>
+  <path d="M-20 -10 L110 70" stroke="url(#lg)" stroke-width="11" stroke-linecap="round"/>
+  <circle cx="110" cy="70" r="11" fill="#2b2c31" stroke="#6a6c73" stroke-width="2"/>
+  <path d="M110 70 L150 92" stroke="url(#lg)" stroke-width="9" stroke-linecap="round"/>
+  <g transform="rotate(28 172 120)"><path d="M148 92 L196 92 L232 160 L112 160 Z" fill="url(#sh)"/><ellipse cx="172" cy="160" rx="60" ry="10" fill="#2a2b30"/><ellipse cx="172" cy="161" rx="50" ry="7" fill="url(#bulb)"/><rect x="160" y="84" width="24" height="10" rx="3" fill="#2b2c31"/></g>
+  <ellipse cx="152" cy="200" rx="70" ry="22" fill="url(#bulb)" opacity=".75" transform="rotate(28 152 200)"/>
+ </svg>
+ <div id="glow"></div>
+</div>
+
+<div id="bar">
+ <div class="ttl">الفيزياء للصف الثالث الثانوي <small>الفصل الثالث: الحث الكهرومغناطيسي · عينة الصفحات ٥٤–٥٩</small></div>
+ <button class="tb" id="bToc"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h10"/></svg><span class="lbl">الفهرس</span></button>
+ <button class="tb" id="bModels"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l9 5v10l-9 5-9-5V7z"/><path d="M12 22V12M21 7l-9 5-9-5"/></svg><span class="lbl">المجسّمات</span></button>
+ <button class="tb" id="bFlat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 17l9-4 9 4M3 12l9-4 9 4"/></svg><span class="lbl">تسطيح الكتاب</span></button>
+ <button class="tb" id="bZoom"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-5-5M11 8v6M8 11h6"/></svg><span class="lbl">تكبير</span></button>
+</div>
+
+<div id="stage"><div id="bookwrap" class="tilt"><div id="book"></div></div></div>
+
+<button class="side-arrow" id="sideNext" aria-label="الصفحة التالية"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 5l-7 7 7 7"/></svg></button>
+<button class="side-arrow" id="sidePrev" aria-label="الصفحة السابقة"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 5l7 7-7 7"/></svg></button>
+
+<div id="nav">
+ <button class="nb" id="bPrev" aria-label="السابقة"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 5l7 7-7 7"/></svg></button>
+ <div id="pinfo"></div>
+ <button class="nb" id="bNext" aria-label="التالية"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 5l-7 7 7 7"/></svg></button>
+</div>
+<div id="hint">اسحب الورقة من اليسار إلى اليمين أو استخدم الأسهم لتقليب الصفحات · المس أي رسم عليه شارة «ثلاثي الأبعاد»</div>
+
+<div id="scrim"></div>
+<div class="drawer" id="dToc"></div>
+<div class="drawer" id="dModels"></div>
+
+<div id="modal">
+ <div id="mback"></div>
+ <div id="mcard">
+  <div id="mhead">
+   <div class="t" id="mtitle"></div>
+   <button class="mb" id="mLabels"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7h12l4 5-4 5H3z"/></svg>الأسماء</button>
+   <button class="mb" id="mQuiz"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 1 1 3.5 2.3c-.7.3-1 .8-1 1.5M12 17h.01"/></svg>اختبرني</button>
+   <button class="mb" id="mFig"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 16l5-5 4 4 3-3 6 6"/></svg>رسم الكتاب</button>
+   <button class="mb pri" id="mClose"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12h12M10 6l-6 6 6 6M20 4v16"/></svg>إعادة إلى الصفحة</button>
+  </div>
+  <div id="mview">
+   <div id="labels"></div>
+   <div id="readout"></div>
+   <div id="bookfig"><div id="bookfigT"></div><canvas id="bookfigC"></canvas></div>
+   <div id="info"></div>
+  </div>
+  <div id="mpanel"></div>
+ </div>
+</div>
+
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+/* =========================================================
+   BOOK DATA
+   ========================================================= */
+const PW=1088, PH=1526, AR=PW/PH;
+const PAGES=[54,55,56,57,58,59];
+const HOTSPOTS={
+ 55:[
+  {id:'f-in', model:'faraday', preset:'in', box:[554,911,927,1159], fig:'شكل (٣-١أ)', title:'تجربة فاراداي — عند دخول المغناطيس'},
+  {id:'f-out',model:'faraday', preset:'out',box:[164,900,521,1170], fig:'شكل (٣-١ب)', title:'تجربة فاراداي — عند خروج المغناطيس'}],
+ 57:[
+  {id:'lenz', model:'lenz', preset:'rows', box:[259,151,808,1160], fig:'شكل (٣-٢)', title:'قاعدة لنز'}],
+ 59:[
+  {id:'m-a', model:'mutual', preset:'a', box:[370,212,804,471], fig:'شكل (٣-٤أ)', title:'الحث المتبادل بين ملفين — لا يوجد تيار في الملف الأول'},
+  {id:'m-b', model:'mutual', preset:'b', box:[537,619,882,833], fig:'شكل (٣-٤ب)', title:'الحث المتبادل — لحظة غلق دائرة الملف الأول'},
+  {id:'m-c', model:'mutual', preset:'c', box:[196,640,492,824], fig:'شكل (٣-٤ج)', title:'الحث المتبادل — بعد استقرار الفيض المغناطيسي'}]
+};
+const TOC=[
+ {g:'الوحدة الأولى: الكهربية التيارية والكهرومغناطيسية'},
+ {t:'الفصل الثالث: الحث الكهرومغناطيسي', p:54},
+ {t:'مقدمة', p:55},
+ {t:'تجربة فاراداي', p:55},
+ {t:'قانونا فاراداي', p:56},
+ {t:'شكل (٣-٢) قاعدة لنز', p:57},
+ {t:'قاعدة لنز Lenz\'s Rule', p:58},
+ {t:'اتجاه التيار المستحث في سلك مستقيم', p:58},
+ {t:'قاعدة اليد اليمنى لفليمنج', p:58},
+ {t:'الحث المتبادل بين ملفين', p:59},
+];
+const AD=n=>String(n).replace(/\d/g,d=>'٠١٢٣٤٥٦٧٨٩'[d]);
+
+/* =========================================================
+   THREE HELPERS
+   ========================================================= */
+const RW=1600, RH=1600;
+const renderer=new THREE.WebGLRenderer({antialias:true,alpha:false});
+renderer.setPixelRatio(1); renderer.setSize(RW,RH,false);
+renderer.setClearColor(0xffffff,1);
+
+function baseScene(){
+ const s=new THREE.Scene();
+ s.add(new THREE.HemisphereLight(0xffffff,0xd8d0c4,1.5));
+ const d=new THREE.DirectionalLight(0xffffff,1.7); d.position.set(3,7,9); s.add(d);
+ const d2=new THREE.DirectionalLight(0xffffff,.6); d2.position.set(-6,2,-4); s.add(d2);
+ return s;
+}
+const V3=(x,y,z=0)=>new THREE.Vector3(x,y,z);
+function polyCurve(pts){const c=new THREE.CurvePath();for(let i=0;i<pts.length-1;i++)c.add(new THREE.LineCurve3(pts[i],pts[i+1]));return c}
+function tube(pts,r,mat,seg){const c=polyCurve(pts);return new THREE.Mesh(new THREE.TubeGeometry(c,seg||pts.length*8,r,8,false),mat)}
+function helixPts(x0,x1,yc,r,turns,per=40){const pts=[];const n=Math.round(turns*per);for(let i=0;i<=n;i++){const u=i/n,ph=u*turns*Math.PI*2;pts.push(V3(x0+(x1-x0)*u,yc-r*Math.cos(ph),r*Math.sin(ph)))}return pts}
+function helixMesh(pts,r,mat){const c=new THREE.CatmullRomCurve3(pts);return new THREE.Mesh(new THREE.TubeGeometry(c,pts.length*2,r,8,false),mat)}
+function std(color,o={}){return new THREE.MeshStandardMaterial(Object.assign({color,roughness:.45,metalness:.2},o))}
+function textCanvas(txt,{px=64,color='#222',weight=700,italic=false,family='Cairo, sans-serif',bg=null,pad=14}={}){
+ const c=document.createElement('canvas'),x=c.getContext('2d');
+ const font=`${italic?'italic ':''}${weight} ${px}px ${family}`; x.font=font;
+ const w=Math.ceil(x.measureText(txt).width)+pad*2,h=Math.ceil(px*1.45);
+ c.width=w;c.height=h;x.font=font;x.direction='rtl';x.textAlign='center';x.textBaseline='middle';
+ if(bg){x.fillStyle=bg;x.beginPath();x.roundRect(0,0,w,h,h/3);x.fill()}
+ x.fillStyle=color;x.fillText(txt,w/2,h/2+px*.05);return c}
+function sprite(txt,h=.32,o={}){
+ const c=textCanvas(txt,o);const t=new THREE.CanvasTexture(c);t.colorSpace=THREE.SRGBColorSpace;t.anisotropy=4;
+ const m=new THREE.SpriteMaterial({map:t,transparent:true,depthTest:false});const s=new THREE.Sprite(m);
+ s.scale.set(h*c.width/c.height,h,1);s.renderOrder=20;return s}
+function arrow(len,color,r=.035){
+ const g=new THREE.Group(),m=std(color,{roughness:.6});
+ const sh=new THREE.Mesh(new THREE.CylinderGeometry(r,r,len*.72,10),m);sh.rotation.z=-Math.PI/2;sh.position.x=len*.36;
+ const hd=new THREE.Mesh(new THREE.ConeGeometry(r*3,len*.28,14),m);hd.rotation.z=-Math.PI/2;hd.position.x=len*.86;
+ g.add(sh,hd);g.userData.mat=m;return g}
+function letterTex(L,bg,fg){if(typeof bg==='number')bg='#'+bg.toString(16).padStart(6,'0');const c=document.createElement('canvas');c.width=256;c.height=128;const x=c.getContext('2d');x.fillStyle=bg;x.fillRect(0,0,256,128);
+ x.fillStyle=fg;x.font='bold 92px "Times New Roman",serif';x.textAlign='center';x.textBaseline='middle';x.fillText(L,128,70);const t=new THREE.CanvasTexture(c);t.colorSpace=THREE.SRGBColorSpace;return t}
+function makeMagnet(len,th,{nCol,sCol,letter='#222',gradient=false}){
+ const g=new THREE.Group();const half=len/2;
+ const mk=(L,col,sx)=>{const plain=std(col,{roughness:.4,metalness:gradient?.25:.05});
+  const lab=new THREE.MeshStandardMaterial({map:letterTex(L,col,letter),roughness:.4,metalness:gradient?.2:.05});
+  const m=new THREE.Mesh(new THREE.BoxGeometry(half,th,th),[plain,plain,lab,plain,lab,lab]);m.position.x=sx*half/2;return m};
+ const n=mk('N',nCol,1),s=mk('S',sCol,-1);g.add(n,s);g.userData.meshes=[n,s];return g}
+/* galvanometer: zero-center dial */
+function dialTex(withG){const c=document.createElement('canvas');c.width=c.height=256;const x=c.getContext('2d');
+ x.fillStyle='#fdfcf8';x.beginPath();x.arc(128,128,124,0,7);x.fill();x.lineWidth=6;x.strokeStyle='#333';x.stroke();
+ x.strokeStyle='#333';x.lineWidth=3;for(let a=-60;a<=60;a+=10){const r=a*Math.PI/180,l=a%30?14:24;x.beginPath();x.moveTo(128+Math.sin(r)*100,128-Math.cos(r)*100);x.lineTo(128+Math.sin(r)*(100-l),128-Math.cos(r)*(100-l));x.stroke()}
+ x.fillStyle='#333';x.font='bold 30px serif';x.textAlign='center';x.fillText('0',128,58);
+ if(withG){x.font='bold 46px serif';x.fillText('G',128,200)}
+ const t=new THREE.CanvasTexture(c);t.colorSpace=THREE.SRGBColorSpace;return t}
+function makeGalv(r,withG=true){
+ const g=new THREE.Group();
+ const body=new THREE.Mesh(new THREE.CylinderGeometry(r,r*1.04,r*.45,40),std(0x3a3f47,{metalness:.5,roughness:.4}));body.rotation.x=Math.PI/2;
+ const face=new THREE.Mesh(new THREE.CircleGeometry(r*.9,48),new THREE.MeshStandardMaterial({map:dialTex(withG),roughness:.8}));face.position.z=r*.231;
+ const piv=new THREE.Group();piv.position.z=r*.25;
+ const nd=new THREE.Mesh(new THREE.BoxGeometry(r*.05,r*.8,r*.03),std(0xd22b2b));nd.position.y=r*.36;piv.add(nd);
+ const hub=new THREE.Mesh(new THREE.CylinderGeometry(r*.09,r*.09,r*.06,16),std(0x222222));hub.rotation.x=Math.PI/2;piv.add(hub);
+ const glass=new THREE.Mesh(new THREE.CircleGeometry(r*.92,40),new THREE.MeshStandardMaterial({color:0xffffff,transparent:true,opacity:.12,roughness:0}));glass.position.z=r*.3;
+ g.add(body,face,piv,glass);g.userData={piv,meshes:[body,face,nd,hub]};return g}
+/* field lines of a bar magnet / solenoid: N at +sep, S at -sep (local) */
+function fieldLineGroup(sep,color,{rad=.014,planes=[0,Math.PI/2],angles=[-150,-118,-86,-58,-30,0,30,58,86,118,150],R=6.5,start=.2}={}){
+ const g=new THREE.Group(),mat=new THREE.MeshStandardMaterial({color,transparent:true,opacity:.85,roughness:.6});
+ const B=(x,y)=>{let bx=0,by=0;for(const [px,s] of [[sep,1],[-sep,-1]]){const dx=x-px,dy=y,r2=dx*dx+dy*dy+1e-4,r3=r2*Math.sqrt(r2);bx+=s*dx/r3;by+=s*dy/r3}const m=Math.hypot(bx,by);return [bx/m,by/m]};
+ const lines2=[];
+ for(const a of angles){const r=a*Math.PI/180;let x=sep+start*Math.cos(r),y=start*Math.sin(r);const pts=[[x,y]];
+  for(let i=0;i<900;i++){const [bx,by]=B(x,y);x+=bx*.04;y+=by*.04;pts.push([x,y]);if(Math.hypot(x+sep,y)<.16||Math.hypot(x,y)>R)break}
+  lines2.push(pts)}
+ const meshes=[];
+ for(const al of planes){const ca=Math.cos(al),sa=Math.sin(al);
+  for(const l of lines2){const p3=l.filter((_,i)=>i%2==0).map(([x,y])=>V3(x,y*ca,y*sa));if(p3.length<3)continue;
+   const c=new THREE.CatmullRomCurve3(p3);const m=new THREE.Mesh(new THREE.TubeGeometry(c,Math.min(160,p3.length),rad,5,false),mat);g.add(m);meshes.push(m);
+   const k=Math.floor(p3.length*.4),p=p3[k],q=p3[Math.min(k+1,p3.length-1)];
+   const cone=new THREE.Mesh(new THREE.ConeGeometry(rad*5,rad*14,10),mat);cone.position.copy(p);
+   cone.quaternion.setFromUnitVectors(V3(0,1,0),q.clone().sub(p).normalize());g.add(cone);meshes.push(cone)}}
+ g.userData={mat,meshes};return g}
+/* current flow particles along a polyline */
+class Flow{
+ constructor(pts,n,color,size=.05){this.pts=pts;this.len=[0];for(let i=1;i<pts.length;i++)this.len.push(this.len[i-1]+pts[i].distanceTo(pts[i-1]));
+  this.L=this.len[this.len.length-1];this.mat=std(color,{emissive:color,emissiveIntensity:.35,transparent:true,opacity:0});this.g=new THREE.Group();this.ps=[];
+  const geo=new THREE.ConeGeometry(size,size*2.6,10);for(let i=0;i<n;i++){const m=new THREE.Mesh(geo,this.mat);this.g.add(m);this.ps.push(m)}this.s=0;this.n=n}
+ at(s){s=((s%this.L)+this.L)%this.L;let lo=0,hi=this.len.length-1;while(hi-lo>1){const m=(lo+hi)>>1;if(this.len[m]<=s)lo=m;else hi=m}
+  const a=this.pts[lo],b=this.pts[hi],u=(s-this.len[lo])/((this.len[hi]-this.len[lo])||1);return [a.clone().lerp(b,u),b.clone().sub(a).normalize()]}
+ update(dt,cur){this.s+=cur*dt*2.2;const vis=Math.min(1,Math.abs(cur)*3);this.mat.opacity=vis;this.g.visible=vis>.02;const up=V3(0,1,0);
+  for(let i=0;i<this.n;i++){const [p,d]=this.at(this.s+i*this.L/this.n);this.ps[i].position.copy(p);if(cur<0)d.negate();this.ps[i].quaternion.setFromUnitVectors(up,d)}}
+}
+function fitCam(cam,box,aspect,{yaw=-.12,pitch=.16,margin=1.06}={}){
+ const cx=(box[0]+box[1])/2,cy=(box[2]+box[3])/2,w=(box[1]-box[0])*margin,h=(box[3]-box[2])*margin;
+ const t=Math.tan(cam.fov*Math.PI/360);const d=Math.max(h/(2*t),w/(2*t*aspect));
+ cam.aspect=aspect;cam.position.set(cx+Math.sin(yaw)*d,cy+Math.sin(pitch)*d,Math.cos(yaw)*Math.cos(pitch)*d);cam.lookAt(cx,cy,0);cam.updateProjectionMatrix();
+ cam.userData.target=V3(cx,cy,0)}
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+const gK=(d,a)=>Math.pow(1+(d/a)*(d/a),-1.5);
+function dispose(o){o.traverse(m=>{if(m.geometry)m.geometry.dispose();const ms=Array.isArray(m.material)?m.material:[m.material];ms.forEach(x=>{if(x){if(x.map)x.map.dispose();x.dispose()}})})}
+function setPart(objs,id){objs.forEach(o=>o.traverse(m=>{if(m.isMesh||m.isSprite)m.userData.part=id}))}
+function partMats(objs){const s=new Set();objs.forEach(o=>o.traverse(m=>{if(m.isMesh){(Array.isArray(m.material)?m.material:[m.material]).forEach(x=>x.emissive&&s.add(x))}}));return [...s]}
+
+/* =========================================================
+   MODEL 1: FARADAY (pages 55)
+   ========================================================= */
+function makeFaraday(preset,inpage){
+ const scene=baseScene(),cam=new THREE.PerspectiveCamera(inpage?22:34,1,.1,100);
+ const yc=.55,r=.85,L=3,yg=-1.55,gr=.42,Lm=2.1,th=.4;
+ const st={N:8,xm:preset==='out'?1.5:4.1,v:0,P:-1,show:true,mode:'auto',target:null,speed:2,t:0,needle:0,nv:0,emf:0,lines:true,dir:preset==='out'?1:-1};
+ const wireMat=std(0xc8452c,{metalness:.55,roughness:.3});
+ const coil=new THREE.Group();scene.add(coil);
+ const shell=new THREE.Mesh(new THREE.CylinderGeometry(r+.07,r+.07,L,32,1,true),new THREE.MeshStandardMaterial({color:0xc8452c,transparent:true,opacity:.06,side:THREE.DoubleSide,depthWrite:false}));
+ shell.rotation.z=Math.PI/2;shell.position.y=yc;scene.add(shell);
+ let helix=null,flow=null;
+ const leadMat=std(0xc8452c,{metalness:.5,roughness:.35});
+ const leads=new THREE.Group();scene.add(leads);
+ leads.add(tube([V3(-L/2,yc-r),V3(-L/2,yg),V3(-gr,yg)],.035,leadMat),tube([V3(L/2,yc-r),V3(L/2,yg),V3(gr,yg)],.035,leadMat));
+ const galv=makeGalv(gr);galv.position.set(0,yg,0);scene.add(galv);
+ function build(){
+  if(helix){coil.remove(helix);helix.geometry.dispose()}if(flow){scene.remove(flow.g)}
+  const hp=helixPts(-L/2,L/2,yc,r,st.N);helix=helixMesh(hp,.045,wireMat);coil.add(helix);
+  const fp=[V3(-gr,yg),V3(-L/2,yg),V3(-L/2,yc-r),...hp,V3(L/2,yc-r),V3(L/2,yg),V3(gr,yg)];
+  flow=new Flow(fp,Math.round(fp.length/14)+8,0x1f9d55,.045);scene.add(flow.g);
+  st.xi=[...Array(st.N)].map((_,i)=>-L/2+L*(i+.5)/st.N);setPart([helix,shell],'coil')}
+ build();
+ const mag=makeMagnet(Lm,th,{nCol:0xd9534f,sCol:0xeef2f7,letter:'#1a1a1a'});mag.position.y=yc;scene.add(mag);
+ const fl=fieldLineGroup(.85,0x3d7fd6,inpage?{rad:.018,planes:[0],angles:[-150,-120,-95,-70,-45,-22,0,22,45,70,95,120,150],R:3.6}:{rad:.012,angles:[-140,-100,-65,-35,0,35,65,100,140],R:4.2});mag.add(fl);
+ const varrow=arrow(1,0x222222,.03);varrow.position.y=yc+.62;scene.add(varrow);
+ const sIn=sprite('إدخال مغناطيس في الملف',.3,{color:'#222'}),sOut=sprite('إخراج مغناطيس من الملف',.3,{color:'#222'});
+ [sIn,sOut].forEach(s=>{s.position.y=yc-.62;scene.add(s)});
+ setPart([mag],'magnet');setPart([fl],'field');setPart([galv,leads],'galv');
+ const S=x=>st.xi.reduce((a,xi)=>a+gK(x-xi,1.3),0);
+ const dS=x=>(S(x+.01)-S(x-.01))/.02;
+ function orient(){mag.rotation.y=st.P<0?0:Math.PI}
+ orient();
+ const box=[-1.75,4.1+Lm/2+.15,yg-gr-.06,yc+r+.45];
+ function update(dt){
+  st.t+=dt;let v=0;
+  if(inpage){const T=3.4,u=st.t%T,mv=2.3;const a=preset==='out'?1.5:4.1,b=preset==='out'?4.1:1.5;
+   if(u<mv){st.xm=a+(b-a)*u/mv;v=(b-a)/mv}else{st.xm=b;v=0}}
+  else{
+   if(st.mode==='auto'&&st.target!=null){const d=st.target-st.xm,step=Math.sign(d)*st.speed*dt;if(Math.abs(d)<=Math.abs(step)){st.xm=st.target;st.target=null;v=0}else{st.xm+=step;v=step/dt}}
+   else if(st.mode==='drag'){const nx=st.xm+(st.dragX-st.xm)*Math.min(1,dt*10);v=(nx-st.xm)/Math.max(dt,1e-3);st.xm=nx}
+  }
+  st.v+=(v-st.v)*Math.min(1,dt*(inpage?60:18));
+  mag.position.x=st.xm;
+  st.emf=-st.P*dS(st.xm)*st.v; // emf = -dPhi/dt
+  const tgt=clamp(st.emf*22,-68,68);
+  if(inpage)st.needle=tgt;else{const acc=200*(tgt-st.needle)-18*st.nv;st.nv+=acc*dt;st.needle+=st.nv*dt}
+  galv.userData.piv.rotation.z=-st.needle*Math.PI/180;
+  flow.update(dt,clamp(st.emf/1.6,-1.2,1.2));
+  const mv=Math.abs(st.v)>.05;varrow.visible=mv;if(mv){varrow.position.x=st.xm+(st.v<0?.45:-.45);varrow.rotation.z=st.v<0?Math.PI:0}
+  sIn.visible=(inpage?preset==='in':st.v<-.05);sOut.visible=(inpage?preset==='out':st.v>.05);
+  sIn.position.x=sOut.position.x=st.xm+.3;
+  fl.visible=st.lines;
+  if(ui)ui.sync();
+ }
+ let t0=0;
+ function render(rd,w,h){if(inpage){fitCam(cam,box,w/h,{yaw:-.05+Math.sin(st.t*.6)*.06,pitch:.12})}rd.render(scene,cam)}
+ const parts={
+  coil:{name:'الملف',src:'ص ٥٥',info:'قام فاراداي بإعداد ملف من سلك النحاس، لفاته معزولة عن بعضها البعض… حيث تتولد قوة دافعة كهربية مستحثة Induced emf وكذلك يتولد تيار كهربي.',anchor:()=>V3(-.4,yc+r+.1)},
+  galv:{name:'الجلفانومتر',src:'ص ٥٥',info:'قام بتوصيل طرفيه بجلفانومتر حساس صفر تدريجه في المنتصف. وعندما أدخل فاراداي مغناطيساً في الملف، لاحظ أثناء إدخاله أن مؤشر الجلفانومتر ينحرف انحرافاً لحظياً في اتجاه معين، وعندما أخرج المغناطيس من الملف لاحظ أثناء إخراجه أن مؤشر الجلفانومتر ينحرف في الاتجاه المضاد.',anchor:()=>V3(0,yg+gr+.05)},
+  magnet:{name:'المغناطيس',src:'ص ٥٦',info:'فإن كان المغناطيس يدخل فإن المجال المغناطيسي المستحث يعمل على مقاومة الإدخال، وإن كان المغناطيس يخرج فإن المجال المغناطيسي المستحث يعمل على استبقاء المغناطيس أو جذبه للداخل.',anchor:()=>V3(st.xm+.5,yc+th/2+.05)},
+  field:{name:'خطوط الفيض المغناطيسي',src:'ص ٥٦',info:'توصّل فاراداي إلى أن القوة الدافعة الكهربية المستحثة وكذلك التيار الكهربي المستحث يتولدان في الدائرة كنتيجة لقطع لفات السلك خطوط الفيض المغناطيسي أثناء حركة المغناطيس.',anchor:()=>V3(st.xm+1.9,yc+1.25)}
+ };
+ const meshesOf={coil:()=>[helix,shell],galv:()=>[galv,leads],magnet:()=>[mag],field:()=>[fl]};
+ let ui=null;
+ const controls=U=>{ui={sync(){U.set('pos',st.xm);U.html('ro',readout())}};return [
+  {t:'btns',items:[{label:'أدخل المغناطيس',fn:()=>{st.mode='auto';st.target=1.55}},{label:'أخرج المغناطيس',fn:()=>{st.mode='auto';st.target=5.0}}]},
+  {t:'btns',items:[{id:'flip',label:'اقلب المغناطيس',fn:b=>{st.P*=-1;orient()}}]},
+  {t:'range',id:'pos',label:'موضع المغناطيس (اسحب بسرعة أو ببطء)',min:1.3,max:5.4,step:.01,value:st.xm,fmt:()=>'',onstart:()=>{st.mode='drag';st.dragX=st.xm;st.target=null},fn:v=>{st.mode='drag';st.dragX=v}},
+  {t:'range',id:'spd',label:'سرعة حركة المغناطيس',min:.5,max:6,step:.1,value:st.speed,fmt:v=>(+v).toFixed(1),fn:v=>st.speed=+v,hint:'«يتناسب مقدار القوة الدافعة المستحثة طردياً مع المعدل الزمني الذي يقطع به الموصل خطوط الفيض» ص ٥٦'},
+  {t:'range',id:'n',label:'عدد لفات الملف N',min:3,max:16,step:1,value:st.N,fmt:v=>v,fn:v=>{st.N=+v;build()},hint:'«مقدار القوة الدافعة المستحثة يتناسب طردياً مع عدد لفات الملف» ص ٥٦'},
+  {t:'toggle',label:'إظهار خطوط الفيض',value:true,fn:v=>st.lines=v}
+ ]};
+ function readout(){const e=st.emf,pct=clamp(e/3,-1,1)*50;
+  return `<div class="f">emf = − N ΔΦ<sub>m</sub>/Δt</div><div>القطب المواجه للملف: <b>${st.P<0?'S':'N'}</b> · N = ${st.N}</div>
+  <div>القوة الدافعة المستحثة (قيمة نسبية): <b dir="ltr">${e.toFixed(1)}</b></div><div class="meter"><i style="${pct>=0?`left:50%;width:${pct}%`:`left:${50+pct}%;width:${-pct}%`}"></i></div>`}
+ const quiz=[
+  {q:'المس الجهاز الذي استخدمه فاراداي ليكشف التيار المستحث.',a:['galv']},
+  {q:'المس الجزء الذي تتولد فيه القوة الدافعة الكهربية المستحثة.',a:['coil']},
+  {q:'ماذا يجب أن يتحرك حتى ينحرف مؤشر الجلفانومتر؟ المسه.',a:['magnet']},
+  {q:'المس ما تقطعه لفات السلك أثناء حركة المغناطيس فتتولد القوة الدافعة المستحثة.',a:['field']}];
+ return {scene,cam,update,render,parts,meshesOf,controls,quiz,focusBox:[-2.2,6.4,yg-gr-.3,yc+r+1.2],lookAt:V3(1.6,0,0),dispose:()=>dispose(scene)};
+}
+
+/* =========================================================
+   MODEL 2: LENZ (page 57)
+   ========================================================= */
+function makeLenz(preset,inpage){
+ const scene=baseScene(),cam=new THREE.PerspectiveCamera(inpage?20:34,1,.1,100);
+ const L=3,rc=.4,yg=-1.15,gr=.3,Lm=2.1,th=.5;
+ const st={xm:5,v:0,P:1,t:0,emf:0,needle:0,nv:0,kase:'b',mode:'case',dragX:5,auto:false};
+ const core=new THREE.Mesh(new THREE.CylinderGeometry(rc,rc,L,40),std(0x8c9096,{metalness:.35,roughness:.38}));core.rotation.z=Math.PI/2;scene.add(core);
+ const hp=helixPts(-L/2+.15,L/2-.15,0,rc+.05,7);const wire=helixMesh(hp,.035,std(0x2d5fd1,{metalness:.3,roughness:.4}));scene.add(wire);
+ const lm=std(0x2d5fd1,{metalness:.3,roughness:.4});const leads=new THREE.Group();scene.add(leads);
+ const xl=-L/2+.15,xr=L/2-.15;
+ leads.add(tube([V3(xl,-rc-.05),V3(xl,yg),V3(-gr,yg)],.028,lm),tube([V3(xr,-rc-.05),V3(xr,yg),V3(gr,yg)],.028,lm));
+ const galv=makeGalv(gr,false);galv.position.set(0,yg,0);scene.add(galv);
+ const fp=[V3(-gr,yg),V3(xl,yg),V3(xl,-rc-.05),...hp,V3(xr,-rc-.05),V3(xr,yg),V3(gr,yg)];
+ const flow=new Flow(fp,26,0x22a447,.05);scene.add(flow.g);
+ const mag=makeMagnet(Lm,th,{nCol:0xb4b9c0,sCol:0xb4b9c0,letter:'#111',gradient:true});scene.add(mag);
+ const ringN=new THREE.Mesh(new THREE.TorusGeometry(rc+.12,.05,12,48),new THREE.MeshStandardMaterial({color:0xd9534f,emissive:0xd9534f,emissiveIntensity:.4,transparent:true,opacity:0}));
+ ringN.rotation.y=Math.PI/2;ringN.position.x=L/2+.03;scene.add(ringN);
+ const endCap=new THREE.Mesh(new THREE.CircleGeometry(rc+.02,32),new THREE.MeshStandardMaterial({color:0x9a9ea4,metalness:.6,roughness:.3}));endCap.rotation.y=Math.PI/2;endCap.position.x=L/2+.005;scene.add(endCap);
+ const labN=sprite('(N) قطب مستحث',.4,{color:'#111'}),labS=sprite('(S) قطب مستحث',.4,{color:'#111'});
+ [labN,labS].forEach(s=>{s.position.set(L/2-.55,rc+.62,0);scene.add(s)});
+ const iLab=sprite('I ind',.38,{color:'#111',italic:true,family:'"Times New Roman",serif'});iLab.position.set(xr+.42,yg+.45,0);scene.add(iLab);
+ const vArrow=arrow(.85,0x22a447,.035);vArrow.position.y=.05;scene.add(vArrow);
+ const vLab=sprite('v',.42,{color:'#111',italic:true,family:'"Times New Roman",serif'});scene.add(vLab);
+ const v0Lab=sprite('v = 0',.4,{color:'#111',italic:true,family:'"Times New Roman",serif'});scene.add(v0Lab);
+ const letters={};['a','b','c','d','e'].forEach(k=>{const s=sprite(`(${k})`,.42,{color:'#111',italic:true,weight:800,family:'"Times New Roman",serif'});s.position.set(2.0,-1.75,0);s.visible=false;scene.add(s);letters[k]=s});
+ setPart([core,wire,endCap],'coil');setPart([leads,flow.g],'current');setPart([galv],'galv');setPart([mag],'magnet');setPart([ringN],'pole');
+ const xi=[...Array(7)].map((_,i)=>-L/2+.15+(L-.3)*(i+.5)/7);
+ const S=x=>xi.reduce((a,q)=>a+gK(x-q,1.2),0),dS=x=>(S(x+.01)-S(x-.01))/.02;
+ const CASES={
+  a:{P:1,pos:()=>5.0,v:0,txt:'شكل (٣-٢ a): المغناطيس ساكن <i>v</i> = 0 بعيداً عن الملف.'},
+  b:{P:1,loop:[5.2,3.2],txt:'عند تقريب القطب الشمالي للمغناطيس من الملف، يمر التيار الكهربي المستحث المتولد في الملف في اتجاه بحيث يكون قطباً شمالياً عند طرف الملف المواجه للقطب الشمالي للمغناطيس. فتعمل قوة التنافر بين القطبين المتشابهين على مقاومة حركة تقريب هذا القطب. (ص ٥٨)'},
+  c:{P:1,pos:()=>2.72,v:0,txt:'شكل (٣-٢ c): المغناطيس ساكن <i>v</i> = 0 بجوار الملف.'},
+  d:{P:1,loop:[2.9,4.9],txt:'وعند إبعاد القطب الشمالي للمغناطيس عن الملف يكون اتجاه التيار المستحث المتولد في الملف في اتجاه بحيث يكون قطباً جنوبياً. فتعمل قوة التجاذب بين القطبين المختلفين (شمالي وجنوبي) على الاحتفاظ بالمغناطيس، أي مقاومة حركة إبعاد القطب المؤثر. (ص ٥٨)'},
+  e:{P:-1,loop:[5.2,3.2],txt:'شكل (٣-٢ e): تقريب القطب الجنوبي من الملف. «يكون اتجاه التيار الكهربي المستحث بحيث يعاكس التغير المسبب له.» (ص ٥٨)'}
+ };
+ function applyCase(k,t){const c=CASES[k];st.P=c.P;
+  if(c.loop){const [a,b]=c.loop,T=Math.abs(b-a)/1.1,u=(t%T)/T;return {x:a+(b-a)*u,v:(b-a)/T}}return {x:c.pos(),v:0}}
+ function setVisual(x,v,P,showLetter){
+  mag.position.set(x,0,0);mag.rotation.y=P>0?Math.PI:0; // N faces coil when P>0
+  const emf=P*dS(x)*v;st.emf=emf; // = dPhi/dt ; positive => near end becomes N
+  const ind=Math.abs(emf)>.03;const pole=Math.sign(emf); // +1 N, -1 S
+  ringN.material.opacity=ind?.85:0;ringN.material.color.set(pole>0?0xd9534f:0x2f6fd1);ringN.material.emissive.set(pole>0?0xd9534f:0x2f6fd1);
+  labN.visible=ind&&pole>0;labS.visible=ind&&pole<0;iLab.visible=ind;
+  const mv=Math.abs(v)>.02;vArrow.visible=vLab.visible=mv;v0Lab.visible=!mv;
+  if(mv){vArrow.rotation.z=v<0?Math.PI:0;vArrow.position.x=v<0?x-Lm/2-.12:x+Lm/2+.12;vLab.position.set(v<0?x-Lm/2-.55:x+Lm/2+.55,.42,0)}
+  v0Lab.position.set(x,th/2+.3,0);
+  return emf}
+ function update(dt){st.t+=dt;if(inpage)return;
+  let x,v;
+  if(st.mode==='case'){const r=applyCase(st.kase,st.t);x=r.x;v=r.v;if(!CASES[st.kase].loop){x=st.xm+(r.x-st.xm)*Math.min(1,dt*6);v=0}}
+  else{x=st.xm+(st.dragX-st.xm)*Math.min(1,dt*10);v=(x-st.xm)/Math.max(dt,1e-3)}
+  st.v+=(v-st.v)*Math.min(1,dt*18);st.xm=x;
+  const emf=setVisual(x,st.v,st.P);
+  const tgt=clamp(-emf*80,-60,60);const acc=200*(tgt-st.needle)-18*st.nv;st.nv+=acc*dt;st.needle+=st.nv*dt;
+  galv.userData.piv.rotation.z=st.needle*Math.PI/180;
+  flow.update(dt,clamp(-emf*2.5,-1,1));
+  Object.values(letters).forEach(s=>s.visible=false);
+  if(ui)ui.sync()}
+ const rowBox=[-1.85,6.4,-2.05,1.15];
+ function render(rd,w,h){
+  if(!inpage){rd.render(scene,cam);return}
+  const ks=['a','b','c','d','e'],rh=h/5;
+  for(let k=0;k<5;k++){const key=ks[k];const r=applyCase(key,st.t+k*.37);st.xm=r.x;
+   const emf=setVisual(r.x,r.v,CASES[key].P);
+   galv.userData.piv.rotation.z=clamp(-emf*80,-60,60)*Math.PI/180;flow.update(0,0);flow.g.visible=false;
+   Object.entries(letters).forEach(([kk,s])=>s.visible=kk===key);
+   const y=Math.round(h-(k+1)*rh);rd.setViewport(0,y,w,Math.round(rh));rd.setScissor(0,y,w,Math.round(rh));
+   fitCam(cam,rowBox,w/rh,{yaw:-.06+Math.sin(st.t*.5+k)*.05,pitch:.14});rd.render(scene,cam)}
+  rd.setViewport(0,0,w,h);rd.setScissor(0,0,w,h)}
+ const parts={
+  coil:{name:'الملف',src:'ص ٥٨',info:'تنص قاعدة لنز على ما يلي: يكون اتجاه التيار الكهربي المستحث بحيث يعاكس التغير المسبب له.',anchor:()=>V3(-.6,rc+.15)},
+  pole:{name:'القطب المستحث (طرف الملف المواجه للمغناطيس)',src:'ص ٥٨',info:'عند تقريب القطب الشمالي للمغناطيس من الملف، يمر التيار الكهربي المستحث المتولد في الملف في اتجاه بحيث يكون قطباً شمالياً عند طرف الملف المواجه للقطب الشمالي للمغناطيس.',anchor:()=>V3(L/2+.05,-rc-.2)},
+  magnet:{name:'المغناطيس',src:'ص ٥٨',info:'فتعمل قوة التنافر بين القطبين المتشابهين على مقاومة حركة تقريب هذا القطب… وعند الإبعاد تعمل قوة التجاذب بين القطبين المختلفين على الاحتفاظ بالمغناطيس، أي مقاومة حركة إبعاد القطب المؤثر.',anchor:()=>V3(st.xm,th/2+.1)},
+  galv:{name:'الجلفانومتر',src:'ص ٥٥',info:'جلفانومتر حساس صفر تدريجه في المنتصف: ينحرف مؤشره في اتجاه معين أثناء الإدخال، وفي الاتجاه المضاد أثناء الإخراج.',anchor:()=>V3(0,yg+gr+.05)},
+  current:{name:'التيار المستحث I ind',src:'ص ٥٨',info:'يكون اتجاه التيار الكهربي المستحث بحيث يعاكس التغير المسبب له.',anchor:()=>V3(xr,yg+.15)}
+ };
+ const meshesOf={coil:()=>[core,wire,endCap],pole:()=>[ringN,endCap],magnet:()=>[mag],galv:()=>[galv],current:()=>[leads]};
+ let ui=null;
+ const controls=U=>{ui={sync(){U.set('pos',st.xm);U.html('ro',readout());U.html('cx',st.mode==='case'?CASES[st.kase].txt:'تحكّم حرّ: حرّك المغناطيس بالمنزلق ولاحظ القطب المستحث واتجاه التيار.');U.seg('case',st.mode==='case'?st.kase:null)}};return [
+  {t:'seg',id:'case',label:'الحالات في شكل (٣-٢)',items:['a','b','c','d','e'].map(k=>({k,label:k})),fn:k=>{st.mode='case';st.kase=k;st.t=0}},
+  {t:'btns',items:[{label:'الحالة التالية ◂',fn:()=>{const ks='abcde';st.mode='case';st.kase=ks[(ks.indexOf(st.kase)+1)%5];st.t=0}}]},
+  {t:'html',id:'cx'},
+  {t:'range',id:'pos',label:'تحكّم حرّ: موضع المغناطيس',min:2.7,max:5.6,step:.01,value:5,fmt:()=>'',onstart:()=>{st.mode='drag';st.dragX=st.xm},fn:v=>{st.mode='drag';st.dragX=+v}},
+  {t:'btns',items:[{label:'اقلب المغناطيس',fn:()=>{st.P*=-1;if(st.mode==='case'){st.mode='drag';st.dragX=st.xm}}}]}
+ ]};
+ function readout(){const ind=Math.abs(st.emf)>.04;const pole=st.emf>0?'N':'S';
+  return `<div>القطب المواجه للملف: <b>${st.P>0?'N':'S'}</b> · المغناطيس ${Math.abs(st.v)<.02?'ساكن (v = 0)':st.v<0?'يقترب':'يبتعد'}</div>
+  <div>${ind?`طرف الملف المواجه يصبح قطباً <b style="color:${pole==='N'?'#d9534f':'#2f6fd1'}">${pole}</b> مستحثاً`:'لا يتولد تيار مستحث'}</div>
+  ${ind?`<div>${(pole==='N')===(st.P>0)?'تنافر ← يقاوم التقريب':'تجاذب ← يقاوم الإبعاد'}</div>`:''}`}
+ const quiz=[
+  {q:'المغناطيس يقترب بقطبه الشمالي. المس الطرف الذي يتكوّن عنده قطب شمالي مستحث (N).',a:['pole'],setup:()=>{st.mode='case';st.kase='b';st.t=0}},
+  {q:'المغناطيس ساكن (v = 0). المس الجهاز الذي يدل على أنه لا يوجد تيار مستحث.',a:['galv'],setup:()=>{st.mode='case';st.kase='c';st.t=0}},
+  {q:'المغناطيس يقترب. قوة التنافر تقاوم حركة جسمٍ ما… المسه.',a:['magnet'],setup:()=>{st.mode='case';st.kase='b';st.t=0}},
+  {q:'المغناطيس يبتعد. المس الجزء الذي يمر فيه التيار المستحث.',a:['current','coil'],setup:()=>{st.mode='case';st.kase='d';st.t=0}}];
+ if(!inpage){st.kase=preset&&CASES[preset]?preset:'b'}
+ return {scene,cam,update,render,parts,meshesOf,controls,quiz,focusBox:[-2,6.2,-1.7,1.4],lookAt:V3(2,-.2,0),dispose:()=>dispose(scene)};
+}
+
+/* =========================================================
+   MODEL 3: MUTUAL INDUCTION (page 59)
+   ========================================================= */
+function makeMutual(preset,inpage){
+ const scene=baseScene(),cam=new THREE.PerspectiveCamera(inpage?22:34,1,.1,100);
+ const yc=.5,r1=.42,L1=2.4,r2=.75,x2a=.6,x2b=2.6,yb=-1.35,gr=.3;
+ const st={gx:preset==='a'?-1.25:-.78,I:preset==='c'?3:0,V:3,sw:preset==='c',t:0,emf:0,needle:0,nv:0,lines:true,M:0,flux:0,vx:0,dragX:null};
+ const prim=new THREE.Group();scene.add(prim);
+ const pwm=std(0x8a4b2a,{metalness:.5,roughness:.35});
+ const hp1=helixPts(-L1/2,L1/2,yc,r1,16,36);prim.add(helixMesh(hp1,.032,pwm));
+ const pm=std(0x2b2b2b,{roughness:.6});
+ const pLeads=new THREE.Group();prim.add(pLeads);
+ pLeads.add(tube([V3(-L1/2,yc-r1),V3(-L1/2,yb),V3(-.78,yb)],.026,pm),tube([V3(-.2,yb),V3(.2,yb)],.026,pm),tube([V3(.78,yb),V3(L1/2,yb),V3(L1/2,yc-r1)],.026,pm));
+ const bat=new THREE.Group();bat.position.set(-.49,yb,0);prim.add(bat);
+ const bb=new THREE.Mesh(new THREE.CylinderGeometry(.14,.14,.5,24),std(0x2e3440,{metalness:.3}));bb.rotation.z=Math.PI/2;
+ const bt=new THREE.Mesh(new THREE.CylinderGeometry(.14,.14,.12,24),std(0xd9a441,{metalness:.6}));bt.rotation.z=Math.PI/2;bt.position.x=.19;
+ const bn=new THREE.Mesh(new THREE.CylinderGeometry(.05,.05,.08,12),std(0xbfc5cc,{metalness:.8}));bn.rotation.z=Math.PI/2;bn.position.x=.29;
+ bat.add(bb,bt,bn);const plus=sprite('+',.22,{color:'#111'});plus.position.set(.2,.3,0);bat.add(plus);
+ const swg=new THREE.Group();swg.position.set(.2,yb,0);prim.add(swg);
+ const base=new THREE.Mesh(new THREE.BoxGeometry(.7,.06,.22),std(0x7a5a3a,{roughness:.8}));base.position.set(.29,-.06,0);
+ const post=new THREE.Mesh(new THREE.CylinderGeometry(.04,.04,.12,12),std(0xbfc5cc,{metalness:.8}));post.position.y=.02;
+ const post2=post.clone();post2.position.x=.58;
+ const blade=new THREE.Group();const bl=new THREE.Mesh(new THREE.BoxGeometry(.62,.035,.06),std(0xcfd5dc,{metalness:.85,roughness:.25}));bl.position.x=.31;blade.add(bl);
+ const knob=new THREE.Mesh(new THREE.SphereGeometry(.05,12,12),std(0x222222));knob.position.x=.62;blade.add(knob);blade.position.y=.07;
+ swg.add(base,post,post2,blade);
+ const pfp=[V3(-.2,yb),V3(-.78,yb),V3(-L1/2,yb),V3(-L1/2,yc-r1),...hp1,V3(L1/2,yc-r1),V3(L1/2,yb),V3(.78,yb),V3(.2,yb)];
+ const pflow=new Flow(pfp,34,0xe0a020,.04);prim.add(pflow.g);
+ const fl=fieldLineGroup(1.1,0x3d7fd6,inpage?{rad:.02,planes:[0],angles:[-70,-45,-22,0,22,45,70],R:3.0,start:.16}:{rad:.012,angles:[-120,-80,-50,-25,0,25,50,80,120],R:3.3,start:.16});prim.add(fl);fl.position.y=yc;
+ // secondary
+ const sec=new THREE.Group();scene.add(sec);
+ const hp2=helixPts(x2a,x2b,yc,r2,10,44);const sw2=std(0xb5652e,{metalness:.5,roughness:.35});sec.add(helixMesh(hp2,.04,sw2));
+ const sLeads=new THREE.Group();sec.add(sLeads);const gx2=1.6;
+ sLeads.add(tube([V3(x2a,yc-r2),V3(x2a,yb),V3(gx2-gr,yb)],.026,pm.clone()),tube([V3(x2b,yc-r2),V3(x2b,yb),V3(gx2+gr,yb)],.026,pm.clone()));
+ const galv=makeGalv(gr,false);galv.position.set(gx2,yb,0);sec.add(galv);
+ const sfp=[V3(gx2-gr,yb),V3(x2a,yb),V3(x2a,yc-r2),...hp2,V3(x2b,yc-r2),V3(x2b,yb),V3(gx2+gr,yb)];
+ const sflow=new Flow(sfp,26,0x22a447,.05);sec.add(sflow.g);
+ setPart([prim],'primary');setPart([pLeads],'primary');setPart([bat],'battery');setPart([swg],'switch');setPart([fl],'field');setPart([sec],'secondary');setPart([galv],'galv');
+ const M=gx=>{const gap=Math.max(.05,x2a-(gx+L1/2));return gK(gap,.9)};st.flux=M(st.gx)*st.I;
+ function update(dt){st.t+=dt;
+  if(inpage&&preset==='b'){const T=3.6,cy=Math.floor(st.t/T),u=st.t%T;if(cy!==st.cy){st.cy=cy;st.I=0;st.flux=0}st.sw=u>.5}
+  if(!inpage&&st.dragX!=null){const nx=st.gx+(st.dragX-st.gx)*Math.min(1,dt*10);st.vx=(nx-st.gx)/Math.max(dt,1e-3);st.gx=nx}else st.vx=0;
+  const tgtI=st.sw?st.V:0;st.I+=(tgtI-st.I)*Math.min(1,dt/.32);
+  prim.position.x=st.gx;
+  const fx=M(st.gx)*st.I;const emf=-(fx-st.flux)/Math.max(dt,1e-3);st.flux=fx;st.emf=dt>0?emf:0;
+  const tgt=clamp(st.emf*6.5,-62,62);
+  if(inpage)st.needle+= (tgt-st.needle)*Math.min(1,dt*12);else{const acc=220*(tgt-st.needle)-20*st.nv;st.nv+=acc*dt;st.needle+=st.nv*dt}
+  galv.userData.piv.rotation.z=-st.needle*Math.PI/180;
+  blade.rotation.z=st.sw?0:.62;
+  pflow.update(dt,st.I/st.V*.55*(st.V/3));sflow.update(dt,clamp(st.emf/3,-1.2,1.2));
+  fl.userData.mat.opacity=clamp(st.I/3,0,1)*.9;fl.visible=st.lines&&st.I>.03;
+  if(ui)ui.sync()}
+ const boxes={a:[-3.05,2.85,yb-.35,yc+r2+.35],b:[-2.15,2.85,yb-.35,yc+r2+.75],c:[-2.15,2.85,yb-.35,yc+r2+.75]};
+ function render(rd,w,h){if(inpage)fitCam(cam,boxes[preset],w/h,{yaw:-.04+Math.sin(st.t*.55)*.06,pitch:.1});rd.render(scene,cam)}
+ const parts={
+  primary:{name:'الملف الأول',src:'ص ٥٩',info:'إذا وضع ملفان أحدهما داخل الآخر أو أحدهما بالقرب من الآخر فإن تغير شدة التيار الكهربي في أحدهما يولد قوة دافعة كهربية مستحثة في الآخر.',anchor:()=>V3(st.gx-.2,yc+r1+.1)},
+  secondary:{name:'الملف الثاني',src:'ص ٥٩',info:'في حالة عدم وجود تيار في الملف الأول لا توجد قوة دافعة كهربية في الملف الثاني. لحظة غلق دائرة الملف الأول فإن قوة دافعة كهربية تتولد في الملف الثاني. بعد استقرار الفيض المغناطيسي فإن التيار في الملف الثاني ينعدم.',anchor:()=>V3(1.6,yc+r2+.1)},
+  switch:{name:'المفتاح',src:'ص ٥٩',info:'لحظة غلق دائرة الملف الأول فإن قوة دافعة كهربية تتولد في الملف الثاني.',anchor:()=>V3(st.gx+.5,yb+.2)},
+  battery:{name:'البطارية',src:'شكل (٣-٤)',info:'مصدر التيار في دائرة الملف الأول (البطارية والمفتاح على التوالي مع الملف كما في شكل ٣-٤).',anchor:()=>V3(st.gx-.49,yb+.25)},
+  galv:{name:'الجلفانومتر',src:'ص ٦٢',info:'ينحرف مؤشر الجلفانومتر في الاتجاه المضاد في الحالات الآتية: أثناء إبعاد أو إخراج الملف الابتدائي من الملف الثانوي، أثناء نقص شدة التيار في الملف الابتدائي، عند فتح الدائرة الابتدائية أثناء وجود الملف الابتدائي داخل (أو قرب) الملف الثانوي.',anchor:()=>V3(gx2,yb+gr+.05)},
+  field:{name:'الفيض المغناطيسي',src:'ص ٥٩',info:'تتناسب القوة الدافعة الكهربية المستحثة مع معدل التغير في الفيض المغناطيسي المار به. ونظراً لأن الفيض المغناطيسي يتناسب طردياً مع شدة التيار في الملف الأول، فإن القوة الدافعة الكهربية المستحثة تتناسب مع معدل التغير في شدة التيار في الملف الأول.',anchor:()=>V3(st.gx+1.9,yc+1.0)}
+ };
+ const meshesOf={primary:()=>[prim.children[0],pLeads],secondary:()=>[sec.children[0],sLeads],switch:()=>[swg],battery:()=>[bat],galv:()=>[galv],field:()=>[fl]};
+ let ui=null;
+ const controls=U=>{ui={sync(){U.html('ro',readout());U.label('sw',st.sw?'افتح المفتاح':'أغلق المفتاح');U.set('gap',st.gx)}};return [
+  {t:'btns',items:[{id:'sw',label:st.sw?'افتح المفتاح':'أغلق المفتاح',fn:()=>{st.sw=!st.sw}}]},
+  {t:'range',id:'v',label:'شدة التيار في الملف الأول (البطارية)',min:1,max:5,step:.5,value:st.V,fmt:v=>(+v).toFixed(1),fn:v=>st.V=+v,hint:'غيّر الشدة والمفتاح مغلق: تغيّر شدة التيار يولّد قوة دافعة مستحثة.'},
+  {t:'range',id:'gap',label:'حرّك الملف الأول (قرّب / أبعد)',min:-3.1,max:-.75,step:.01,value:st.gx,fmt:()=>'',onstart:()=>{st.dragX=st.gx},fn:v=>{st.dragX=+v},hint:'جرّب إبعاد الملف الأول والمفتاح مغلق، ولاحظ اتجاه انحراف المؤشر.'},
+  {t:'toggle',label:'إظهار خطوط الفيض',value:true,fn:v=>st.lines=v}
+ ]};
+ function readout(){const pct=clamp(st.emf/8,-1,1)*50,ip=clamp(st.I/5,0,1)*100;
+  return `<div>شدة التيار في الملف الأول</div><div class="meter"><i style="left:0;width:${ip}%;background:#e0a020"></i></div>
+  <div>القوة الدافعة المستحثة في الملف الثاني: <b dir="ltr">${st.emf.toFixed(1)}</b></div><div class="meter"><i style="${pct>=0?`left:50%;width:${pct}%`:`left:${50+pct}%;width:${-pct}%`};background:#22a447"></i></div>
+  <div style="font-size:12px;color:#7c7164">${Math.abs(st.emf)>.15?'يتغير الفيض ← تتولد قوة دافعة مستحثة':st.I>.05?'الفيض مستقر ← التيار في الملف الثاني ينعدم':'لا يوجد تيار في الملف الأول'}</div>`}
+ const quiz=[
+  {q:'المس الجزء الذي تُغلق به دائرة الملف الأول فتتولد قوة دافعة في الملف الثاني.',a:['switch']},
+  {q:'المس الملف الذي تتولد فيه القوة الدافعة الكهربية المستحثة.',a:['secondary']},
+  {q:'المس الملف الذي تتغير فيه شدة التيار الكهربي.',a:['primary']},
+  {q:'المس الجهاز الذي ينحرف مؤشره لحظة غلق الدائرة.',a:['galv']}];
+ return {scene,cam,update,render,parts,meshesOf,controls,quiz,focusBox:[-3.4,3.2,-2.1,2.2],lookAt:V3(0,-.2,0),dispose:()=>dispose(scene)};
+}
+const FACTORY={faraday:makeFaraday,lenz:makeLenz,mutual:makeMutual};
+
+/* =========================================================
+   BOOK UI
+   ========================================================= */
+const $=s=>document.querySelector(s);
+const book=$('#book'),wrap=$('#bookwrap'),stage=$('#stage');
+const imgs={};PAGES.forEach(p=>{const i=new Image();i.src=`img/p${p}.jpg`;imgs[p]=i});
+const pageEls={},hsList=[];
+function makePage(p){
+ const el=document.createElement('div');el.className='page';el.dataset.p=p;
+ const im=document.createElement('img');im.src=`img/p${p}.jpg`;im.alt=`صفحة ${p}`;im.draggable=false;el.appendChild(im);
+ const sp=document.createElement('div');sp.className='spine';el.appendChild(sp);
+ (HOTSPOTS[p]||[]).forEach(h=>{const d=document.createElement('div');d.className='hs';d.dataset.id=h.id;
+  const [x0,y0,x1,y1]=h.box;Object.assign(d.style,{left:x0/PW*100+'%',top:y0/PH*100+'%',width:(x1-x0)/PW*100+'%',height:(y1-y0)/PH*100+'%'});
+  const c=document.createElement('canvas');d.appendChild(c);const b=document.createElement('span');b.className='badge';b.textContent='ثلاثي الأبعاد';d.appendChild(b);
+  el.appendChild(d);const H={...h,page:p,el:d,canvas:c,ctx:c.getContext('2d'),inst:null};hsList.push(H)});
+ return el}
+PAGES.forEach(p=>pageEls[p]=makePage(p));
+const HS=id=>hsList.find(h=>h.id===id);
+
+let single=false,views=[],vi=0,pw=0,ph=0,zoom=1,flat=false,busy=false;
+const slots={L:document.createElement('div'),R:document.createElement('div'),S:document.createElement('div')};
+Object.entries(slots).forEach(([k,s])=>{s.className='slot '+k;book.appendChild(s)});
+const shadowEl=document.createElement('div');shadowEl.className='leafshadow';book.appendChild(shadowEl);
+function computeViews(){views=single?PAGES.map(p=>({S:p})):[{R:null,L:54},{R:55,L:56},{R:57,L:58},{R:59,L:null}]}
+function viewOfPage(p){return views.findIndex(v=>v.S===p||v.L===p||v.R===p)}
+function layout(){
+ const was=single,curPage=views.length?(views[vi].S||views[vi].R||views[vi].L):54;
+ single=innerWidth<820||innerWidth/innerHeight<1.0;document.body.classList.toggle('single',single);
+ computeViews();if(was!==single||!layout.done){vi=Math.max(0,viewOfPage(curPage))}layout.done=true;
+ const availW=innerWidth-(single?16:110),availH=innerHeight-54-58-(single?16:40);
+ if(single){pw=Math.min(availW,availH*AR)}else{pw=Math.min(availW/2,availH*AR)}
+ pw=Math.floor(pw*zoom);ph=Math.floor(pw/AR);
+ book.style.width=(single?pw:pw*2)+'px';book.style.height=ph+'px';
+ slots.L.style.cssText=`left:0;width:${pw}px;height:${ph}px`;slots.R.style.cssText=`left:${pw}px;width:${pw}px;height:${ph}px`;slots.S.style.cssText=`left:0;width:${pw}px;height:${ph}px`;
+ slots.S.style.display=single?'':'none';slots.L.style.display=slots.R.style.display=single?'none':'';
+ hsList.forEach(h=>{const [x0,y0,x1,y1]=h.box;const cw=(x1-x0)/PW*pw,chh=(y1-y0)/PH*ph;const s=Math.min(Math.max(1.5,devicePixelRatio||1)*1.15,RW/cw,RH/chh,2.4);
+  h.canvas.width=Math.round(cw*s);h.canvas.height=Math.round(chh*s)});
+ show()}
+function put(slot,p){slot.innerHTML='';if(p!=null)slot.appendChild(pageEls[p])}
+function show(){const v=views[vi];if(single)put(slots.S,v.S);else{put(slots.L,v.L);put(slots.R,v.R)}updNav()}
+function updNav(){const v=views[vi];const ps=single?[v.S]:[v.R,v.L].filter(x=>x!=null);
+ $('#pinfo').innerHTML=`صفحة ${ps.map(AD).join(' – ')}<small>${vi+1} / ${views.length}</small>`;
+ $('#bNext').disabled=$('#sideNext').disabled=vi>=views.length-1;$('#bPrev').disabled=$('#sidePrev').disabled=vi<=0}
+function visiblePages(){const v=views[vi];return single?[v.S]:[v.L,v.R].filter(x=>x!=null)}
+
+/* ---------- page flip (curling leaf made of strips) ---------- */
+const NS=12;
+function buildLeaf(front,back){
+ const leaf=document.createElement('div');leaf.className='leaf';leaf.style.width=pw+'px';leaf.style.height=ph+'px';
+ const sw=pw/NS,strips=[];let parent=leaf;
+ for(let i=0;i<NS;i++){const st=document.createElement('div');st.className='strip';
+  st.style.width=(sw+.8)+'px';st.style.height=ph+'px';st.style.left=(i===0?pw-sw:-sw)+'px';
+  const f=document.createElement('div');f.className='face front';const b=document.createElement('div');b.className='face back';
+  if(front!=null){f.style.backgroundImage=`url(img/p${front}.jpg)`}f.style.backgroundSize=`${pw}px ${ph}px`;f.style.backgroundPosition=`${-(pw-(i+1)*sw)}px 0`;
+  if(back!=null){b.style.backgroundImage=`url(img/p${back}.jpg)`}b.style.backgroundSize=`${pw}px ${ph}px`;b.style.backgroundPosition=`${-(i*sw)}px 0`;
+  const fi=document.createElement('i'),bi=document.createElement('i');f.appendChild(fi);b.appendChild(bi);
+  st.append(f,b);parent.appendChild(st);parent=st;strips.push({st,fi,bi})}
+ book.appendChild(leaf);
+ return {leaf,set(theta,t){const bend=46*Math.sin(Math.PI*t)*(theta<90?1:-1)*.9;let acc=0;
+  strips.forEach((s,i)=>{const a=i===0?theta:bend/(NS-1);acc+=a;s.st.style.transform=`rotateY(${a}deg)`;
+   const sh=Math.max(0,Math.sin(acc*Math.PI/180));s.fi.style.opacity=(sh*.28+(i/NS)*.05*sh).toFixed(3);s.bi.style.opacity=(sh*.22).toFixed(3)})},
+  remove(){leaf.remove()}}}
+let flipCtl=null;
+function startFlip(dir){
+ if(busy)return null;const ni=vi+dir;if(ni<0||ni>=views.length)return null;busy=true;
+ const cur=views[vi],nx=views[ni];let leaf,commit,cancel,fromT;
+ if(single){
+  if(dir>0){put(slots.S,nx.S);leaf=buildLeaf(cur.S,null);commit=()=>{};cancel=()=>put(slots.S,cur.S)}
+  else{leaf=buildLeaf(nx.S,null);commit=()=>put(slots.S,nx.S);cancel=()=>{}}
+ }else{
+  if(dir>0){put(slots.L,nx.L);leaf=buildLeaf(cur.L,nx.R);commit=()=>put(slots.R,nx.R);cancel=()=>put(slots.L,cur.L)}
+  else{put(slots.R,nx.R);leaf=buildLeaf(nx.L,cur.R);commit=()=>put(slots.L,nx.L);cancel=()=>put(slots.R,cur.R)}
+ }
+ const thetaOf=t=>dir>0?180*t:180*(1-t);
+ const shadow=t=>{const s=Math.sin(Math.PI*t);shadowEl.style.opacity=(s*.5).toFixed(2);
+  if(single){shadowEl.style.cssText+=`;left:0;width:${pw}px;background:linear-gradient(to left,rgba(0,0,0,.35),rgba(0,0,0,0) 60%)`}
+  else{const left=thetaOf(t)<90;shadowEl.style.cssText+=`;left:${left?pw:0}px;width:${pw}px;background:linear-gradient(${left?'to right':'to left'},rgba(0,0,0,.4),rgba(0,0,0,0) ${30+40*s}%)`}};
+ const ctl={t:0,set(t){ctl.t=t;const th=thetaOf(t);leaf.set(th,t);shadow(t)},
+  animate(to,dur=780){return new Promise(res=>{const from=ctl.t,t0=performance.now();const ease=x=>x<.5?2*x*x:1-Math.pow(-2*x+2,2)/2;
+   const step=now=>{const u=Math.min(1,(now-t0)/(dur*Math.max(.25,Math.abs(to-from))));ctl.set(from+(to-from)*ease(u));if(u<1)requestAnimationFrame(step);else res()};requestAnimationFrame(step)})},
+  async finish(ok){await ctl.animate(ok?1:0);leaf.remove();shadowEl.style.opacity=0;if(ok){commit();vi=ni}else cancel();busy=false;flipCtl=null;updNav()}};
+ ctl.set(0);flipCtl=ctl;return ctl}
+async function go(dir){const c=startFlip(dir);if(!c){wrap.animate([{transform:wrap.style.transform||''},{transform:`translateX(${dir*-8}px)`},{transform:''}],{duration:260,composite:'add'});return}await c.finish(true)}
+function jump(i){if(busy||i===vi)return;vi=i;show()}
+$('#bNext').onclick=$('#sideNext').onclick=()=>go(1);$('#bPrev').onclick=$('#sidePrev').onclick=()=>go(-1);
+addEventListener('keydown',e=>{if($('#modal').classList.contains('on')){if(e.key==='Escape')closeModal();return}if(e.key==='ArrowLeft')go(1);if(e.key==='ArrowRight')go(-1)});
+/* drag / swipe on the book */
+let drag=null;
+wrap.addEventListener('pointerdown',e=>{if(busy||e.button>0)return;drag={x:e.clientX,y:e.clientY,id:e.pointerId,ctl:null,dir:0,hs:e.target.closest('.hs'),t0:performance.now()}});
+addEventListener('pointermove',e=>{if(!drag||e.pointerId!==drag.id)return;const dx=e.clientX-drag.x,dy=e.clientY-drag.y;
+ if(!drag.ctl){if(zoom>1)return;if(Math.abs(dx)>14&&Math.abs(dx)>Math.abs(dy)*1.2){drag.dir=dx>0?1:-1;drag.ctl=startFlip(drag.dir);if(!drag.ctl){drag=null;return}}else return}
+ const t=clamp(dx*drag.dir/(pw*(single?.9:1.25)),0,1);drag.ctl.set(t)});
+addEventListener('pointerup',e=>{if(!drag||e.pointerId!==drag.id)return;const d=drag;drag=null;
+ if(d.ctl){const fast=performance.now()-d.t0<260;d.ctl.finish(d.ctl.t>.32||(fast&&d.ctl.t>.08));return}
+ if(d.hs&&Math.hypot(e.clientX-d.x,e.clientY-d.y)<10)openModal(d.hs.dataset.id)});
+addEventListener('pointercancel',()=>{if(drag&&drag.ctl)drag.ctl.finish(false);drag=null});
+
+/* toolbar */
+$('#bFlat').onclick=()=>{flat=!flat;wrap.classList.toggle('tilt',!flat&&zoom===1);$('#bFlat').classList.toggle('on',flat);$('#bFlat .lbl').textContent=flat?'إمالة الكتاب':'تسطيح الكتاب'};
+$('#bZoom').onclick=()=>{zoom=zoom===1?1.7:zoom===1.7?2.4:1;stage.classList.toggle('zoomed',zoom>1);wrap.classList.toggle('tilt',!flat&&zoom===1);
+ $('#bZoom').classList.toggle('on',zoom>1);$('#bZoom .lbl').textContent=zoom===2.4?'تصغير':'تكبير';layout();if(zoom>1)stage.scrollLeft=(stage.scrollWidth-stage.clientWidth)/2};
+function openDrawer(id){['#dToc','#dModels'].forEach(d=>$(d).classList.toggle('open',d===id&&!$(d).classList.contains('open')));$('#scrim').classList.toggle('on',!!document.querySelector('.drawer.open'))}
+$('#bToc').onclick=()=>openDrawer('#dToc');$('#bModels').onclick=()=>openDrawer('#dModels');$('#scrim').onclick=()=>openDrawer(null);
+$('#dToc').innerHTML='<h3>الفهرس</h3><div class="note">عينة من الكتاب: الصفحات ٥٤ إلى ٥٩ (أرقام الصفحات المطبوعة)</div>'+TOC.map(e=>e.g?`<div class="grp">${e.g}</div>`:`<div class="it" data-p="${e.p}"><span>${e.t}</span><span class="pg">ص ${AD(e.p)}</span></div>`).join('');
+$('#dModels').innerHTML='<h3>المجسّمات</h3><div class="note">المس أيّ مجسّم لتنتقل إلى صفحته وتفتحه</div>'+Object.entries(HOTSPOTS).map(([p,hs])=>hs.map(h=>`<div class="it mdl" data-h="${h.id}"><span>${h.fig}<span class="sub">${h.title}</span></span><span class="pg">ص ${AD(p)}</span></div>`).join('')).join('');
+$('#dToc').onclick=e=>{const it=e.target.closest('.it');if(!it)return;openDrawer(null);jump(viewOfPage(+it.dataset.p))};
+$('#dModels').onclick=e=>{const it=e.target.closest('.it');if(!it)return;openDrawer(null);const h=HS(it.dataset.h);jump(viewOfPage(h.page));setTimeout(()=>openModal(h.id),350)};
+setTimeout(()=>{$('#hint').style.opacity=0;setTimeout(()=>$('#hint').remove(),600)},7000);
+
+/* =========================================================
+   IN-PAGE RENDER LOOP
+   ========================================================= */
+let modalInst=null,last=performance.now(),acc=0;
+function frame(now){requestAnimationFrame(frame);const dt=Math.min(.05,(now-last)/1000);last=now;
+ if(modalInst){modalStep(dt);return}
+ acc+=dt;if(acc<1/30)return;const d=acc;acc=0;
+ renderer.setScissorTest(true);renderer.setClearColor(0xffffff,1);
+ for(const h of hsList){if(!h.el.isConnected)continue;
+  if(!h.inst)h.inst=FACTORY[h.model](h.preset,true);
+  h.inst.update(d);const w=h.canvas.width,hh=h.canvas.height;
+  renderer.setViewport(0,0,w,hh);renderer.setScissor(0,0,w,hh);renderer.clear();h.inst.render(renderer,w,hh);
+  h.ctx.drawImage(renderer.domElement,0,RH-hh,w,hh,0,0,w,hh)}
+ renderer.setScissorTest(false)}
+
+/* =========================================================
+   MODAL (3D focus view)
+   ========================================================= */
+const modal=$('#modal'),card=$('#mcard'),mview=$('#mview'),labelsEl=$('#labels'),info=$('#info'),panel=$('#mpanel');
+let controlsOC=null,curH=null,showLabels=false,quizState=null,selected=null,ray=new THREE.Raycaster();
+function finalRect(){const m=innerWidth<820||innerWidth/innerHeight<1;const w=m?innerWidth-12:Math.min(innerWidth-40,1280),h=m?innerHeight-12:Math.min(innerHeight-40,820);return {x:(innerWidth-w)/2,y:(innerHeight-h)/2,w,h}}
+function placeCard(){const r=finalRect();Object.assign(card.style,{left:r.x+'px',top:r.y+'px',width:r.w+'px',height:r.h+'px'});return r}
+function sizeRenderer(){const r=mview.getBoundingClientRect();renderer.setPixelRatio(Math.min(devicePixelRatio||1,2));renderer.setSize(Math.max(10,r.width),Math.max(10,r.height));
+ if(modalInst){modalInst.cam.aspect=r.width/r.height;modalInst.cam.updateProjectionMatrix()}}
+function openModal(id){
+ const h=HS(id);if(!h||modalInst)return;curH=h;
+ const inst=FACTORY[h.model](h.preset==='rows'?'b':h.preset,false);modalInst=inst;
+ $('#mtitle').innerHTML=`${h.fig} — ${h.title}<small>الفيزياء للصف الثالث الثانوي · صفحة ${AD(h.page)}</small>`;
+ modal.classList.add('on');const fr=placeCard();
+ renderer.setScissorTest(false);renderer.setClearColor(0xf7f2e9,1);
+ mview.insertBefore(renderer.domElement,labelsEl);sizeRenderer();
+ // camera framing
+ const r=mview.getBoundingClientRect();fitCam(inst.cam,inst.focusBox,r.width/r.height,{yaw:-.28,pitch:.2,margin:1.12});
+ controlsOC=new OrbitControls(inst.cam,renderer.domElement);controlsOC.target.copy(inst.cam.userData.target);controlsOC.enableDamping=true;controlsOC.minDistance=3;controlsOC.maxDistance=30;controlsOC.update();
+ buildPanel(inst);buildLabels(inst);info.style.display='none';$('#bookfig').style.display='none';$('#readout').style.visibility='';$('#mFig').classList.remove('on');
+ quizState=null;$('#mQuiz').classList.remove('on');selected=null;
+ // rise from the page
+ const hr=h.el.getBoundingClientRect();const sx=hr.width/fr.w,sy=hr.height/fr.h;
+ card.animate([{transform:`translate(${hr.left-fr.x}px,${hr.top-fr.y}px) scale(${sx},${sy})`,opacity:.6,borderRadius:'3px'},{transform:'none',opacity:1,borderRadius:'16px'}],{duration:620,easing:'cubic-bezier(.2,.8,.2,1)'});
+ requestAnimationFrame(()=>modal.classList.add('show'));
+}
+async function closeModal(){
+ if(!modalInst)return;const h=curH,fr=finalRect(),hr=h.el.getBoundingClientRect();
+ modal.classList.remove('show');
+ const a=card.animate([{transform:'none',opacity:1},{transform:`translate(${hr.left-fr.x}px,${hr.top-fr.y}px) scale(${hr.width/fr.w},${hr.height/fr.h})`,opacity:.3}],{duration:480,easing:'cubic-bezier(.5,0,.3,1)'});
+ await a.finished;modal.classList.remove('on');
+ controlsOC.dispose();controlsOC=null;modalInst.dispose();modalInst=null;curH=null;
+ renderer.domElement.remove();renderer.setPixelRatio(1);renderer.setSize(RW,RH,false);renderer.setClearColor(0xffffff,1)}
+$('#mClose').onclick=closeModal;
+addEventListener('resize',()=>{layout();if(modalInst){placeCard();sizeRenderer()}});
+
+/* panel + controls */
+function buildPanel(inst){
+ panel.innerHTML='';const reg={};const U={
+  set(id,v){const e=reg[id];if(e&&e.type==='range'&&document.activeElement!==e)e.value=v},
+  html(id,s){const e=id==='ro'?$('#readout'):reg[id];if(e&&e._h!==s){e.innerHTML=s;e._h=s}},
+  label(id,s){const e=reg[id];if(e&&e.textContent!==s)e.textContent=s},
+  seg(id,k){const e=reg[id];if(e)e.querySelectorAll('.mb').forEach(b=>b.classList.toggle('on',b.dataset.k===k))}};
+ const spec=inst.controls(U);const h4=document.createElement('h4');h4.textContent='تحكّم في التجربة';panel.appendChild(h4);
+ const ctlBox=document.createElement('div');panel.appendChild(ctlBox);panel._ctl=ctlBox;
+ for(const c of spec){const d=document.createElement('div');d.className='ctl';
+  if(c.t==='btns'){d.innerHTML='<div class="btns"></div>';c.items.forEach(it=>{const b=document.createElement('button');b.className='mb';b.textContent=it.label;b.onclick=()=>it.fn(b);d.firstChild.appendChild(b);if(it.id)reg[it.id]=b})}
+  else if(c.t==='range'){d.innerHTML=`<label>${c.label}<span></span></label><input type="range" min="${c.min}" max="${c.max}" step="${c.step}" value="${c.value}">${c.hint?`<div class="hint">${c.hint}</div>`:''}`;
+   const inp=d.querySelector('input'),sp=d.querySelector('span');sp.textContent=c.fmt(c.value);reg[c.id]=inp;
+   inp.addEventListener('pointerdown',()=>c.onstart&&c.onstart());inp.addEventListener('input',()=>{sp.textContent=c.fmt(inp.value);c.fn(+inp.value)});inp.addEventListener('pointerup',()=>inp.blur())}
+  else if(c.t==='toggle'){d.innerHTML=`<label style="justify-content:flex-start;gap:8px;cursor:pointer"><input type="checkbox" ${c.value?'checked':''}> ${c.label}</label>`;d.querySelector('input').onchange=e=>c.fn(e.target.checked)}
+  else if(c.t==='seg'){d.innerHTML=`<label>${c.label}</label><div class="seg"></div>`;c.items.forEach(it=>{const b=document.createElement('button');b.className='mb';b.dataset.k=it.k;b.textContent=it.label;b.onclick=()=>c.fn(it.k);d.querySelector('.seg').appendChild(b)});reg[c.id]=d}
+  else if(c.t==='html'){d.className='casebox';reg[c.id]=d}
+  ctlBox.appendChild(d)}
+ const q=document.createElement('div');q.id='quizbox';panel.appendChild(q);
+ const tip=document.createElement('div');tip.className='ctl';tip.innerHTML='<div class="hint" style="margin-top:14px">اسحب بإصبع واحد للتدوير، وبإصبعين للتقريب. المس أي جزء لترى اسمه ووظيفته بكلمات الكتاب.</div>';panel.appendChild(tip)}
+/* labels */
+function buildLabels(inst){labelsEl.innerHTML='';for(const [id,p] of Object.entries(inst.parts)){const l=document.createElement('div');l.className='lab';l.textContent=p.name;l.dataset.id=id;l.onclick=()=>pick(id);labelsEl.appendChild(l);p._lab=l}labelsEl.style.display=showLabels?'':'none'}
+$('#mLabels').onclick=()=>{showLabels=!showLabels;$('#mLabels').classList.toggle('on',showLabels);labelsEl.style.display=showLabels?'':'none'};
+/* book figure */
+$('#mFig').onclick=()=>{const bf=$('#bookfig'),on=bf.style.display!=='block';bf.style.display=on?'block':'none';$('#mFig').classList.toggle('on',on);$('#readout').style.visibility=on?'hidden':'';
+ if(on){const h=curH,[x0,y0,x1,y1]=h.box,c=$('#bookfigC');c.width=x1-x0;c.height=y1-y0;c.getContext('2d').drawImage(imgs[h.page],x0,y0,x1-x0,y1-y0,0,0,x1-x0,y1-y0);$('#bookfigT').textContent=`${h.fig} كما في الكتاب · ص ${AD(h.page)}`}};
+/* picking */
+let pdown=null;
+mview.addEventListener('pointerdown',e=>{if(e.target===renderer.domElement)pdown={x:e.clientX,y:e.clientY}});
+mview.addEventListener('pointerup',e=>{if(!pdown||!modalInst)return;const m=Math.hypot(e.clientX-pdown.x,e.clientY-pdown.y);pdown=null;if(m>7)return;
+ const r=renderer.domElement.getBoundingClientRect();const v=new THREE.Vector2((e.clientX-r.left)/r.width*2-1,-(e.clientY-r.top)/r.height*2+1);
+ ray.setFromCamera(v,modalInst.cam);const hits=ray.intersectObjects(modalInst.scene.children,true).filter(h=>h.object.userData.part&&h.object.visible&&!(h.object.material&&h.object.material.opacity===0));
+ if(hits.length)pick(hits[0].object.userData.part);else{info.style.display='none';highlight(null)}});
+function highlight(id,color=0x2f7dd1){if(!modalInst)return;Object.keys(modalInst.parts).forEach(k=>{partMats(modalInst.meshesOf[k]()).forEach(m=>{if(m.userData.e0==null){m.userData.e0=m.emissive.getHex();m.userData.ei0=m.emissiveIntensity}
+  if(k===id){m.emissive.set(color);m.emissiveIntensity=.55}else{m.emissive.setHex(m.userData.e0);m.emissiveIntensity=m.userData.ei0}})});selected=id}
+function pick(id){const p=modalInst.parts[id];if(!p)return;if(quizState&&!quizState.done){answer(id);return}
+ highlight(id);info.innerHTML=`<button class="x" aria-label="إغلاق">×</button><b>${p.name}</b><div>«${p.info}»</div><span class="src">من نص الكتاب · ${p.src}</span>`;info.style.display='block';info.querySelector('.x').onclick=()=>{info.style.display='none';highlight(null)}}
+/* quiz */
+$('#mQuiz').onclick=()=>{if(quizState){endQuiz();return}quizState={i:0,score:0,done:false,lock:false};$('#mQuiz').classList.add('on');panel._ctl.style.display='none';info.style.display='none';highlight(null);renderQuiz()};
+function renderQuiz(){const q=modalInst.quiz,s=quizState,box=$('#quizbox');
+ if(s.i>=q.length){s.done=true;box.innerHTML=`<div class="quiz"><div class="qn">انتهى الاختبار</div><div class="score">${AD(s.score)} / ${AD(q.length)}</div><div style="text-align:center;font-weight:700">${s.score===q.length?'ممتاز! إجابات كلها صحيحة':s.score>=q.length/2?'جيد، راجع الأجزاء التي أخطأت فيها':'راجع الصفحة ثم حاول مرة أخرى'}</div><div class="btns" style="margin-top:10px"><button class="mb" id="qAgain">أعد الاختبار</button><button class="mb pri" id="qEnd">العودة إلى التجربة</button></div></div>`;
+  $('#qAgain').onclick=()=>{quizState={i:0,score:0,done:false,lock:false};renderQuiz()};$('#qEnd').onclick=endQuiz;return}
+ const it=q[s.i];if(it.setup)it.setup();
+ box.innerHTML=`<div class="quiz"><div class="qn">اختبرني · السؤال ${AD(s.i+1)} من ${AD(q.length)} · الدرجة ${AD(s.score)}</div><div class="q">${it.q}</div><div class="fb" id="qfb">المس الجزء الصحيح في المجسّم</div></div>`}
+function answer(id){const s=quizState;if(s.lock)return;const it=modalInst.quiz[s.i],ok=it.a.includes(id),fb=$('#qfb');s.lock=true;
+ if(ok){s.score++;fb.className='fb ok';fb.textContent='إجابة صحيحة: '+modalInst.parts[id].name;highlight(id,0x2e9e5b)}
+ else{fb.className='fb bad';fb.textContent='ليست هذه. الإجابة الصحيحة: '+modalInst.parts[it.a[0]].name;highlight(it.a[0],0xd4473f)}
+ setTimeout(()=>{highlight(null);s.i++;s.lock=false;renderQuiz()},1700)}
+function endQuiz(){quizState=null;$('#mQuiz').classList.remove('on');$('#quizbox').innerHTML='';panel._ctl.style.display='';highlight(null)}
+/* per-frame */
+const tmp=new THREE.Vector3();
+function modalStep(dt){const inst=modalInst;inst.update(dt);controlsOC.update();renderer.render(inst.scene,inst.cam);
+ if(showLabels){const r=renderer.domElement.getBoundingClientRect();for(const p of Object.values(inst.parts)){tmp.copy(p.anchor()).project(inst.cam);const vis=tmp.z<1;
+  p._lab.style.display=vis?'':'none';p._lab.style.left=((tmp.x+1)/2*r.width)+'px';p._lab.style.top=((1-tmp.y)/2*r.height)+'px'}}}
+
+/* =========================================================
+   START
+   ========================================================= */
+(async()=>{try{await Promise.race([document.fonts.ready,new Promise(r=>setTimeout(r,2500))]);await document.fonts.load('700 40px Cairo')}catch(e){}
+ layout();requestAnimationFrame(frame)})();
+window.__book={go,openModal,closeModal,jump,state:()=>({vi,single,views}),inst:()=>modalInst};
+</script>
+</body>
+</html>

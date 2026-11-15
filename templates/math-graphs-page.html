@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>رياضيات · صفحة ٦٤ · الدالة العكسية ودوال الجذر (صفحة تفاعلية)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@500;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--mag:#c4237f;--mag2:#7b2fbf;--acc:#f2b84b;--bar:rgba(18,22,40,.9)}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;overflow:hidden;font-family:'Cairo',system-ui,sans-serif;color:#eef;background:#1b2140;overscroll-behavior:none}
+button{font-family:inherit}
+#bg{position:fixed;inset:0;background:radial-gradient(ellipse 70% 60% at 50% 45%,rgba(255,255,255,.10),transparent 70%),linear-gradient(160deg,#2b2f63,#151a33)}
+#bg:after{content:"";position:absolute;inset:0;opacity:.35;background-image:radial-gradient(rgba(255,255,255,.08) 1px,transparent 1px);background-size:22px 22px}
+#bar{position:fixed;top:0;left:0;right:0;height:54px;display:flex;align-items:center;gap:8px;padding:0 12px;z-index:20;background:var(--bar);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+#bar .ttl{flex:1;min-width:0;font-weight:800;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tb{display:inline-flex;align-items:center;gap:6px;height:38px;padding:0 14px;border-radius:19px;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.08);color:#fff;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap}
+.tb.on{background:var(--mag);border-color:var(--mag)}
+.tb svg{width:18px;height:18px}
+@media (max-width:640px){.tb .lbl{display:none}.tb{padding:0 11px}#bar .ttl{font-size:13px}}
+#stage{position:fixed;top:54px;bottom:0;left:0;right:0;overflow:hidden;touch-action:none;user-select:none;-webkit-user-select:none}
+#zoomer{position:absolute;left:0;top:0;transform-origin:0 0}
+#zoomer.anim{transition:transform .28s ease}
+#page{position:relative;background:#fff;box-shadow:0 12px 30px rgba(0,0,0,.5)}
+#page>img{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;-webkit-user-drag:none}
+.hs{position:absolute;cursor:pointer;background:#fff}
+.hs canvas{position:absolute;inset:0;width:100%;height:100%}
+.hs .badge{position:absolute;top:-14px;left:0;font-size:clamp(8px,1.6vw,12px);font-weight:800;color:#fff;background:linear-gradient(135deg,#c4237f,#7b2fbf);padding:1px 8px;border-radius:10px;pointer-events:none;animation:pulse 2.4s infinite}
+@keyframes pulse{50%{transform:scale(1.08)}}
+#hint{position:fixed;z-index:22;bottom:18px;left:50%;transform:translateX(-50%);background:rgba(18,22,40,.94);border:1px solid rgba(255,255,255,.15);padding:9px 16px;border-radius:14px;font-size:13px;line-height:1.7;width:max-content;max-width:92vw;text-align:center;transition:opacity .5s;pointer-events:none}
+#zlab{position:fixed;top:64px;left:50%;transform:translateX(-50%);z-index:21;background:rgba(18,22,40,.85);padding:3px 12px;border-radius:12px;font-size:12px;font-weight:700;opacity:0;transition:opacity .3s;pointer-events:none;direction:ltr}
+.drawer{position:fixed;top:54px;bottom:0;right:0;width:min(360px,92vw);z-index:30;background:#1d2244;transform:translateX(105%);transition:transform .35s;overflow:auto;padding:14px 16px}
+.drawer.open{transform:none}
+.it{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;cursor:pointer;font-size:14px;font-weight:600;background:rgba(255,255,255,.05);margin-bottom:6px}
+.it .sub{display:block;font-size:12px;opacity:.65}
+.pg{flex:none;font-size:12px;font-weight:800;background:var(--mag);padding:2px 9px;border-radius:9px}
+#scrim{position:fixed;inset:0;z-index:25;background:rgba(0,0,0,.35);opacity:0;pointer-events:none;transition:opacity .3s}
+#scrim.on{opacity:1;pointer-events:auto}
+/* modal */
+#modal{position:fixed;inset:0;z-index:50;display:none}
+#modal.on{display:block}
+#mback{position:absolute;inset:0;background:rgba(10,10,25,.72);backdrop-filter:blur(3px);opacity:0;transition:opacity .4s}
+#modal.show #mback{opacity:1}
+#mcard{position:absolute;background:#fbf9fc;color:#2a2233;border-radius:16px;overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,.6);display:grid;grid-template-columns:1fr 330px;grid-template-rows:auto 1fr;transform-origin:0 0}
+#mhead{grid-column:1/-1;display:flex;align-items:center;gap:8px;padding:8px 12px;background:#fff;border-bottom:1px solid #eadff0;flex-wrap:wrap}
+#mhead .t{flex:1;min-width:160px;font-weight:800;font-size:15px}
+#mhead .t small{display:block;font-weight:600;font-size:12px;color:#8a7f94}
+.mb{display:inline-flex;align-items:center;justify-content:center;gap:5px;height:34px;padding:0 12px;border-radius:17px;border:1px solid #e0d3e8;background:#f6f0f9;color:#2a2233;font-weight:700;font-size:13px;cursor:pointer;white-space:nowrap}
+.mb.on{background:var(--mag);border-color:var(--mag);color:#fff}
+.mb.pri{background:#2a2233;color:#fff;border-color:#2a2233}
+#mview{position:relative;min-height:0;background:#fff}
+#mview canvas{display:block;width:100%;height:100%;touch-action:none}
+#readout{position:absolute;top:10px;right:10px;background:rgba(255,255,255,.94);border:1px solid #eadff0;border-radius:12px;padding:8px 12px;font-size:13px;line-height:1.7;max-width:min(330px,70%)}
+.m{font-family:'Times New Roman',serif;font-style:italic;font-size:16px;direction:ltr;unicode-bidi:isolate;white-space:nowrap}
+#info{position:absolute;left:10px;right:10px;bottom:10px;background:#fff;border:1px solid #e3d5ec;border-radius:12px;padding:10px 14px;box-shadow:0 10px 30px rgba(0,0,0,.15);font-size:14px;line-height:1.75;display:none}
+#info b{color:var(--mag)}
+#info .src{font-size:11px;color:#8a7f94;display:block}
+#info .x{float:left;border:none;background:none;font-size:20px;cursor:pointer;color:#8a7f94}
+#bookfig{position:absolute;top:10px;left:10px;background:#fff;border:1px solid #e3d5ec;border-radius:10px;padding:6px;box-shadow:0 10px 30px rgba(0,0,0,.2);display:none;max-width:48%}
+#bookfig img{display:block;max-width:100%;max-height:55vh}
+#bookfig div{font-size:12px;font-weight:700;color:#8a7f94;padding:2px 4px 6px}
+#mpanel{overflow:auto;padding:12px 14px 20px;border-right:1px solid #eadff0}
+#mpanel h4{margin:6px 0;font-size:13px;color:#8a7f94}
+.ctl{margin-bottom:12px}
+.ctl label{display:flex;justify-content:space-between;align-items:center;font-size:13px;font-weight:700;margin-bottom:4px;gap:8px}
+.ctl label span{color:var(--mag);direction:ltr}
+.ctl input[type=range]{width:100%;accent-color:var(--mag);direction:ltr}
+.ctl .hint{font-size:12px;color:#7a6f86;line-height:1.6;margin-top:3px}
+.btns{display:flex;flex-wrap:wrap;gap:6px}
+.btns .mb{flex:1 1 auto}
+.chk{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:700;margin:6px 0;cursor:pointer}
+.chk i{width:14px;height:4px;border-radius:2px;display:inline-block}
+.steps{background:#fff;border:1px solid #eadff0;border-radius:10px;padding:8px 10px;font-size:13px;line-height:2}
+.quiz{background:#fff;border:2px solid var(--mag);border-radius:12px;padding:12px;font-size:14px;line-height:1.8}
+.quiz .qn{font-size:12px;color:#8a7f94;font-weight:700}
+.quiz .q{font-weight:800;margin:4px 0 8px}
+.quiz .fb{font-weight:800;min-height:24px}
+.fb.ok{color:#2e9e5b}.fb.bad{color:#d4473f}
+.score{font-size:30px;font-weight:800;color:var(--mag);text-align:center}
+@media (max-width:820px),(max-aspect-ratio:1/1){
+ #mcard{grid-template-columns:1fr;grid-template-rows:auto minmax(0,1fr) minmax(0,42%)}
+ #mpanel{border-right:none;border-top:1px solid #eadff0}
+ #mhead .t{flex-basis:100%;font-size:13px}#mhead .t small{display:none}
+ #mhead .mb{flex:1;font-size:12px;padding:0 6px}
+ #readout{font-size:12px;padding:6px 9px}
+}
+</style>
+</head>
+<body>
+<div id="bg"></div>
+<div id="bar">
+ <div class="ttl">رياضيات · صفحة ٦٤ · الدالة العكسية ودوال الجذر التربيعي</div>
+ <button class="tb" id="bModels"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 20l5-9 4 5 3-4 6 8z"/></svg><span class="lbl">الرسوم التفاعلية</span></button>
+ <button class="tb" id="bZoom"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-5-5M11 8v6M8 11h6"/></svg><span class="lbl">تكبير</span></button>
+</div>
+<div id="stage"><div id="zoomer"><div id="page"><img id="pimg" alt="صفحة ٦٤"></div></div></div>
+<div id="zlab"></div>
+<div id="hint">المس أي رسم بياني عليه شارة «تفاعلي» لتتحكم فيه · كبّر بصباعين أو بلمستين سريعتين</div>
+<div id="scrim"></div>
+<div class="drawer" id="drawer"><h3 style="margin:4px 0 12px">الرسوم التفاعلية</h3><div id="dlist"></div></div>
+<div id="modal"><div id="mback"></div><div id="mcard">
+ <div id="mhead"><div class="t" id="mtitle"></div>
+  <button class="mb" id="mQuiz">اختبرني</button><button class="mb" id="mFig">رسم الكتاب</button><button class="mb pri" id="mClose">إعادة إلى الصفحة</button></div>
+ <div id="mview"><canvas id="mc"></canvas><div id="readout"></div><div id="bookfig"><div id="bftitle"></div><img id="bfimg"></div><div id="info"></div></div>
+ <div id="mpanel"></div>
+</div></div>
+<script>
+const PAGE_IMG=/*PAGE*/'img/p64.jpg';
+const FIG={g1:/*FIG1*/'img/g1.jpg',g2:/*FIG2*/'img/g2.jpg'};
+const IW=1063,IH=1394;
+const $=s=>document.querySelector(s);
+const C={mag:'#c4237f',mag2:'#7b2fbf',grid:'#e9a3c8',gridS:'#d9579c',ink:'#b51f74',faint:'rgba(196,35,127,.28)',ref:'#2b7bd6'};
+const AD=s=>String(s).replace(/\d/g,d=>'٠١٢٣٤٥٦٧٨٩'[d]);
+const fmt=v=>{const r=Math.round(v*100)/100;return (r<0?'−':'')+Math.abs(r)};
+
+/* ============ GRAPH ENGINE ============ */
+function mkView(ctx,W,H,v){ctx.direction='ltr';const sx=W/(v.x1-v.x0),sy=H/(v.y1-v.y0);return {ctx,W,H,v,X:x=>(x-v.x0)*sx,Y:y=>(v.y1-y)*sy,ux:sx,uy:sy,ix:px=>v.x0+px/sx,iy:py=>v.y1-py/sy}}
+function grid(G,o){const {ctx,X,Y}=G,u=Math.min(G.ux,G.uy);ctx.save();ctx.lineWidth=Math.max(1,u*.045);
+ ctx.strokeStyle=C.grid;ctx.setLineDash(o.dashed?[u*.16,u*.12]:[u*.12,u*.08]);
+ for(let x=Math.ceil(o.gx0);x<=o.gx1;x++){ctx.beginPath();ctx.moveTo(X(x),Y(o.gy0));ctx.lineTo(X(x),Y(o.gy1));ctx.stroke()}
+ for(let y=Math.ceil(o.gy0);y<=o.gy1;y++){ctx.beginPath();ctx.moveTo(X(o.gx0),Y(y));ctx.lineTo(X(o.gx1),Y(y));ctx.stroke()}
+ ctx.setLineDash([]);ctx.strokeStyle=C.gridS;ctx.lineWidth=Math.max(1.2,u*.07);ctx.strokeRect(X(o.gx0),Y(o.gy1),X(o.gx1)-X(o.gx0),Y(o.gy0)-Y(o.gy1));
+ // axes
+ ctx.strokeStyle=C.ink;ctx.fillStyle=C.ink;ctx.lineWidth=Math.max(1.4,u*.085);
+ const arr=(x0,y0,x1,y1)=>{ctx.beginPath();ctx.moveTo(x0,y0);ctx.lineTo(x1,y1);ctx.stroke();const a=Math.atan2(y1-y0,x1-x0),s=u*.35;ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x1-s*Math.cos(a-.4),y1-s*Math.sin(a-.4));ctx.lineTo(x1-s*Math.cos(a+.4),y1-s*Math.sin(a+.4));ctx.fill()};
+ arr(X(o.gx0),Y(0),X(o.gx1)+u*.05,Y(0));arr(X(0),Y(o.gy0),X(0),Y(o.gy1)+u*.05);
+ ctx.font=`italic ${u*.62}px "Times New Roman",serif`;ctx.textAlign='center';ctx.textBaseline='middle';
+ ctx.fillText('x',X(o.gx1)-u*.3,Y(0)+u*.5);ctx.fillText('y',X(0)-u*.4,Y(o.gy1)+u*.35);
+ ctx.font=`${u*.58}px "Times New Roman",serif`;
+ for(const x of o.xt)ctx.fillText(x<0?'−'+(-x):x,X(x)+(x<0?-u*.08:0),Y(0)+u*.45);
+ for(const y of o.yt)ctx.fillText(y<0?'−'+(-y):y,X(0)-u*.38,Y(y)+u*.02);
+ if(o.zero)ctx.fillText('0',X(0)-u*.4,Y(0)-u*.4);
+ ctx.restore()}
+function clipG(G,o){const {ctx,X,Y}=G;ctx.save();ctx.beginPath();ctx.rect(X(o.gx0),Y(o.gy1),X(o.gx1)-X(o.gx0),Y(o.gy0)-Y(o.gy1));ctx.clip()}
+function curve(G,pts,color,w,o={}){const {ctx,X,Y}=G;if(pts.length<2)return;ctx.save();ctx.strokeStyle=color;ctx.lineWidth=w;ctx.lineJoin=ctx.lineCap='round';if(o.dash)ctx.setLineDash(o.dash);if(o.alpha!=null)ctx.globalAlpha=o.alpha;
+ ctx.beginPath();pts.forEach((p,i)=>i?ctx.lineTo(X(p[0]),Y(p[1])):ctx.moveTo(X(p[0]),Y(p[1])));ctx.stroke();ctx.restore()}
+function dot(G,x,y,color,r){const {ctx,X,Y}=G;ctx.save();ctx.fillStyle=color;ctx.beginPath();ctx.arc(X(x),Y(y),r,0,7);ctx.fill();ctx.restore()}
+function label(G,x,y,txt,color,size,o={}){const {ctx,X,Y}=G;ctx.save();ctx.fillStyle=color;ctx.font=`${o.italic===false?'':'italic '}${size}px "Times New Roman",serif`;ctx.textAlign=o.align||'left';ctx.textBaseline='middle';
+ if(o.bg){const w=ctx.measureText(txt).width;ctx.fillStyle='rgba(255,255,255,.88)';ctx.fillRect(X(x)-(o.align==='center'?w/2:o.align==='right'?w:0)-3,Y(y)-size*.62,w+6,size*1.24);ctx.fillStyle=color}
+ ctx.fillText(txt,X(x),Y(y));ctx.restore()}
+function sample(f,a,b,n=160){const p=[];for(let i=0;i<=n;i++){const x=a+(b-a)*i/n,y=f(x);if(isFinite(y))p.push([x,y])}return p}
+const ease=t=>t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2;const cl=(v,a,b)=>Math.max(a,Math.min(b,v));
+function distSeg(px,py,pts){let m=1e9;for(let i=1;i<pts.length;i++){const [ax,ay]=pts[i-1],[bx,by]=pts[i],dx=bx-ax,dy=by-ay,L=dx*dx+dy*dy||1;let t=((px-ax)*dx+(py-ay)*dy)/L;t=cl(t,0,1);m=Math.min(m,Math.hypot(px-ax-t*dx,py-ay-t*dy))}return m}
+
+/* ============ MODEL 1: inverse of y=(x+3)^2-4 ============ */
+function Model1(){
+ const f=x=>(x+3)**2-4;
+ const st={t:1,a:-5,lineYX:true,b1:true,b2:true,restrict:false,play:0,quiz:null};
+ const inV={x0:-7.30,x1:7.30,y0:-7.27,y1:6.30};
+ const g={gx0:-7,gx1:7,gy0:-7,gy1:6,xt:[-6,-5,-4,-3,-2,-1,1,2,3,4,5,6],yt:[1,2,3,4,-1,-2,-3,-4,-5,-6]};
+ const fv={x0:-8,x1:8,y0:-8,y1:7};
+ function parab(){return sample(f,st.restrict?-3:-6.25,0.45,200)}
+ function morph(t){return parab().map(([x,y])=>[x+(y-x)*t,y+(x-y)*t])}
+ function draw(G,t,o){const u=Math.min(G.ux,G.uy);const gg=o.full?{...g,gx0:-8,gx1:8,gy0:-8,gy1:7}:g;grid(G,gg);clipG(G,gg);
+  // axis of symmetry x=-3 (as in book)
+  curve(G,[[-3,-6.8],[-3,5.8]],C.mag,u*.07);
+  if(o.lineYX){curve(G,[[-7,-7],[6,6]],C.ref,u*.06,{dash:[u*.25,u*.15],alpha:o.lineA??1});label(G,-6.2,-6.4,'y = x',C.ref,u*.6,{bg:1})}
+  const P=parab(),Pd=o.prog!=null?P.slice(0,Math.max(2,Math.floor(P.length*o.prog))):P;
+  curve(G,Pd,C.mag,u*.12);
+  if(t>0){const M=morph(t);
+   if(t<1)curve(G,M,C.mag2,u*.11,{alpha:.9});
+   else{const up=M.filter(([x,y])=>y>=-3-1e-6),lo=M.filter(([x,y])=>y<=-3+1e-6);
+    if(o.b1)curve(G,up,o.color2?C.mag2:C.mag,u*.12);if(o.b2&&!st.restrict)curve(G,lo,o.color2?'#e07a1f':C.mag,u*.12)}}
+  if(!o.noLabels){label(G,-6.9,4.5,'y = (x + 3)² − 4',C.mag,u*.6,{bg:1});
+   if(t>=1){if(o.b1)label(G,2.1,-1.85,'y = −3 + √(x + 4)',o.color2?C.mag2:C.mag,u*.58,{bg:1});if(o.b2&&!st.restrict)label(G,1.8,-4.55,'y = −3 − √(x + 4)',o.color2?'#e07a1f':C.mag,u*.58,{bg:1})}}
+  if(o.dots){const pts=[[-6,5],[-5,0],[-1,0],[0,5],[-3,-4]];if(t>=1)pts.push([-4,-3],[0,-1],[0,-5],[5,0]);for(const [x,y] of pts)dot(G,x,y,C.mag,u*.16)}
+  G.ctx.restore()}
+ return {
+  id:'g1',title:'الدالة <span class="m">y = (x + 3)² − 4</span> ومعكوسها',sub:'سؤال ٣ · صفحة ٦٤',box:[546,458,938,822],
+  inPage(ctx,W,H,time){const G=mkView(ctx,W,H,inV),T=time%9;
+   let prog=1,t=0,lineA=0;
+   if(T<1.6)prog=ease(T/1.6);else if(T<2.4)lineA=(T-1.6)/.8;else{lineA=1;t=ease(cl((T-2.4)/2.4,0,1))}
+   ctx.fillStyle='#fff';ctx.fillRect(0,0,W,H);
+   draw(G,t,{prog,lineYX:lineA>0,lineA,b1:true,b2:true,dots:T>4.8,noLabels:T<4.8&&t<1});
+   if(T<4.8&&prog>=1)label(G,-6.9,4.5,'y = (x + 3)² − 4',C.mag,Math.min(G.ux,G.uy)*.6,{bg:1})},
+  focusView:fv,
+  focus(ctx,W,H,dt){if(st.play){st.t=cl(st.t+dt/2.2,0,1);if(st.t>=1)st.play=0;sync()}
+   const asp=W/H;let v={...fv};const cw=v.x1-v.x0,ch=v.y1-v.y0;if(asp>cw/ch){const nw=ch*asp;v.x0-=(nw-cw)/2;v.x1+=(nw-cw)/2}else{const nh=cw/asp;v.y0-=(nh-ch)/2;v.y1+=(nh-ch)/2}
+   ctx.fillStyle='#fff';ctx.fillRect(0,0,W,H);const G=mkView(ctx,W,H,v);this.G=G;const u=Math.min(G.ux,G.uy);
+   draw(G,st.t,{full:1,lineYX:st.lineYX,b1:st.b1,b2:st.b2,dots:false,color2:true});
+   // moving point & its mirror
+   const a=st.restrict?Math.max(st.a,-3):st.a,b=f(a);
+   dot(G,a,b,C.mag,u*.2);label(G,a+.2,b+.45,`(${fmt(a)}, ${fmt(b)})`,C.mag,u*.5,{bg:1});
+   if(st.t>=1){curve(G,[[a,b],[b,a]],'#888',u*.04,{dash:[u*.15,u*.12]});dot(G,b,a,C.mag2,u*.2);label(G,b+.2,a-.45,`(${fmt(b)}, ${fmt(a)})`,C.mag2,u*.5,{bg:1})}
+   if(this.hl){this.hl(G,u)}
+   st.cur={a,b}},
+  parts(){const P=parab(),M=morph(1),up=M.filter(p=>p[1]>=-3),lo=M.filter(p=>p[1]<=-3);
+   return [
+   {k:'f',name:'منحنى الدالة الأصلية',info:'y = (x + 3)² − 4 : قطع مكافئ رأسه (−3 , −4) ومحور تماثله المستقيم x = −3.',src:'من رسم الكتاب · ص ٦٤',hit:(x,y)=>distSeg(x,y,P)},
+   {k:'y1',name:'الفرع y₁',info:'y₁ = −3 + √(x + 4)',src:'نص الكتاب · ص ٦٤',hit:(x,y)=>st.t>=1&&st.b1?distSeg(x,y,up):99},
+   {k:'y2',name:'الفرع y₂',info:'y₂ = −3 − √(x + 4)',src:'نص الكتاب · ص ٦٤',hit:(x,y)=>st.t>=1&&st.b2&&!st.restrict?distSeg(x,y,lo):99},
+   {k:'yx',name:'المستقيم y = x',info:'منحنى المعكوس هو انعكاس منحنى الدالة حول المستقيم y = x، لأننا نبدل بين x و y.',src:'توضيح مضاف',hit:(x,y)=>st.lineYX?Math.abs(x-y)/Math.SQRT2:99},
+   {k:'v',name:'رأس القطع (−3 , −4)',info:'نقطة الرأس تنعكس إلى (−4 , −3) على منحنى المعكوس.',src:'توضيح مضاف',hit:(x,y)=>Math.hypot(x+3,y+4)*.6},
+   {k:'p05',name:'النقطة (0 , −5)',info:'هي صورة النقطة (−5 , 0) بعد التبديل بين x و y.',src:'من رسم الكتاب · ص ٦٤',hit:(x,y)=>st.t>=1?Math.hypot(x,y+5)*.6:99},
+   {k:'ax',name:'محور التماثل x = −3',info:'المستقيم الرأسي الذي يقسم القطع المكافئ إلى نصفين متطابقين.',src:'من رسم الكتاب · ص ٦٤',hit:(x,y)=>Math.abs(x+3)+(y>-1&&y<1?2:0)}]},
+  quiz:[{q:'المس منحنى الدالة الأصلية y = (x + 3)² − 4',a:'f',setup:()=>{st.t=1}},
+        {q:'المس الفرع y₁ = −3 + √(x + 4)',a:'y1',setup:()=>{st.t=1;st.b1=st.b2=true;st.restrict=false}},
+        {q:'النقطة (−5 , 0) تقع على الدالة. المس صورتها على منحنى المعكوس.',a:'p05',setup:()=>{st.t=1}},
+        {q:'المس المستقيم الذي ينعكس حوله منحنى الدالة ليعطي المعكوس.',a:'yx',setup:()=>{st.lineYX=true}}],
+  controls(){return `
+   <div class="steps"><b>من الكتاب:</b> لإيجاد المعكوس نبدل بين <span class="m">x, y</span><br><span class="m">x = (y + 3)² − 4</span> ومنه <span class="m">y = −3 ± √(x + 4)</span></div>
+   <div class="ctl" style="margin-top:12px"><label>انعكاس المنحنى حول <span class="m">y = x</span><span id="tv"></span></label><input type="range" id="t" min="0" max="1" step="0.01">
+    <div class="btns" style="margin-top:6px"><button class="mb" id="play">▶ شغّل الانعكاس</button></div></div>
+   <div class="ctl"><label>حرّك النقطة على المنحنى<span id="av"></span></label><input type="range" id="a" min="-6" max="0.3" step="0.05"><div class="hint">كل نقطة <span class="m">(a, b)</span> على الدالة تقابلها النقطة <span class="m">(b, a)</span> على المعكوس.</div></div>
+   <div class="chk"><input type="checkbox" id="c1"><i style="background:${C.mag2}"></i> الفرع <span class="m">y₁ = −3 + √(x + 4)</span></div>
+   <div class="chk"><input type="checkbox" id="c2"><i style="background:#e07a1f"></i> الفرع <span class="m">y₂ = −3 − √(x + 4)</span></div>
+   <div class="chk"><input type="checkbox" id="c3"><i style="background:${C.ref}"></i> المستقيم <span class="m">y = x</span></div>
+   <div class="chk"><input type="checkbox" id="c4"> قصر المجال على <span class="m">x ≥ −3</span></div>
+   <div class="ctl"><div class="hint">بدون قصر المجال يعطي المعكوس قيمتين لـ y عند كل x (فرعين)، فهو ليس دالة. جرّب قصر المجال ولاحظ.</div></div>`},
+  bind(){const s=st;$('#t').oninput=e=>{s.t=+e.target.value;s.play=0;sync()};$('#play').onclick=()=>{s.t=0;s.play=1};
+   $('#a').oninput=e=>{s.a=+e.target.value;sync()};
+   [['c1','b1'],['c2','b2'],['c3','lineYX'],['c4','restrict']].forEach(([i,k])=>$('#'+i).onchange=e=>{s[k]=e.target.checked;sync()});sync()},
+  readout(){const c=st.cur||{a:st.a,b:f(st.a)};return `<div>النقطة على الدالة: <span class="m">(${fmt(c.a)}, ${fmt(c.b)})</span></div>
+   ${st.t>=1?`<div>صورتها على المعكوس: <span class="m">(${fmt(c.b)}, ${fmt(c.a)})</span></div>`:'<div>اسحب منزلق الانعكاس للنهاية لترى الصورة</div>'}
+   <div style="font-size:12px;color:#7a6f86">${st.restrict?'المعكوس الآن دالة: y = −3 + √(x + 4)':'المعكوس فرعان ← ليس دالة'}</div>`},
+  st,sync:()=>{}
+ }}
+
+/* ============ MODEL 2: y = √(x−h) + k ============ */
+function Model2(){
+ const st={h:2,k:1,parent:true,dom:true,ran:true,anim:0,from:null};
+ const inV={x0:-1.25,x1:10.28,y0:-1.29,y1:5.32};
+ const g={gx0:-1,gx1:10.06,gy0:-.97,gy1:5,xt:[1,2,3,4,5,6,7,8,9],yt:[1,2,3,4],zero:true,dashed:true};
+ const fg={gx0:-2,gx1:11,gy0:-4,gy1:5,xt:[-1,1,2,3,4,5,6,7,8,9,10],yt:[-3,-2,-1,1,2,3,4],dashed:true};
+ const fv={x0:-2.6,x1:11.6,y0:-4.6,y1:5.6};
+ const F=(h,k)=>sample(x=>Math.sqrt(x-h)+k,h,11,220);
+ function draw(G,h,k,o){const u=Math.min(G.ux,G.uy),gg=o.full?fg:g;grid(G,gg);clipG(G,gg);const {ctx,X,Y}=G;
+  if(o.dom){ctx.save();ctx.fillStyle='rgba(43,123,214,.08)';ctx.fillRect(X(h),Y(gg.gy1),X(gg.gx1)-X(h),Y(gg.gy0)-Y(gg.gy1));ctx.restore();curve(G,[[h,gg.gy0],[h,gg.gy1]],C.ref,u*.04,{dash:[u*.2,u*.12]})}
+  if(o.ran){ctx.save();ctx.fillStyle='rgba(224,122,31,.06)';ctx.fillRect(X(gg.gx0),Y(gg.gy1),X(gg.gx1)-X(gg.gx0),Y(k)-Y(gg.gy1));ctx.restore();curve(G,[[gg.gx0,k],[gg.gx1,k]],'#e07a1f',u*.04,{dash:[u*.2,u*.12]})}
+  if(o.parent)curve(G,F(0,0),C.faint,u*.1,{dash:[u*.3,u*.15]});
+  curve(G,F(h,k).filter(p=>p[0]<=gg.gx1),C.mag,u*.12);
+  dot(G,h,k,C.mag,u*(o.full?.18:.08));ctx.restore()}
+ return {
+  id:'g2',title:'الدالة <span class="m">y = √(x − 2) + 1</span> وإزاحتها',sub:'سؤال ٤ · صفحة ٦٤',box:[650,914,936,1078],
+  inPage(ctx,W,H,time){const G=mkView(ctx,W,H,inV),T=time%7.5;let h=2,k=1,par=false;
+   if(T<1.2){h=0;k=0;par=true}else if(T<2.6){h=2*ease((T-1.2)/1.4);k=0;par=true}else if(T<3.8){h=2;k=ease((T-2.6)/1.2);par=true}else par=T<4.6;
+   ctx.fillStyle='#fff';ctx.fillRect(0,0,W,H);draw(G,h,k,{parent:par})},
+  focus(ctx,W,H,dt){if(st.anim){st.anim=Math.min(1,st.anim+dt/1.4);const e=ease(st.anim);st.h=st.from.h+(st.to.h-st.from.h)*e;st.k=st.from.k+(st.to.k-st.from.k)*e;if(st.anim>=1)st.anim=0;sync()}
+   const asp=W/H;let v={...fv};const cw=v.x1-v.x0,ch=v.y1-v.y0;if(asp>cw/ch){const nw=ch*asp;v.x0-=(nw-cw)/2;v.x1+=(nw-cw)/2}else{const nh=cw/asp;v.y0-=(nh-ch)/2;v.y1+=(nh-ch)/2}
+   ctx.fillStyle='#fff';ctx.fillRect(0,0,W,H);const G=mkView(ctx,W,H,v);this.G=G;const u=Math.min(G.ux,G.uy);
+   draw(G,st.h,st.k,{full:1,parent:st.parent,dom:st.dom,ran:st.ran});
+   label(G,st.h+.25,st.k-.45,`(${fmt(st.h)}, ${fmt(st.k)})`,C.mag,u*.5,{bg:1});
+   
+   if(st.parent)label(G,9.4,Math.sqrt(9.4)-.55,'y = √x','#d98ab5',u*.5,{bg:1});
+   if(this.hl)this.hl(G,u)},
+  parts(){const P=F(st.h,st.k),P0=F(0,0);return [
+   {k:'c',name:'منحنى الدالة',info:eq()+' : منحنى دالة الجذر الأم بعد إزاحته.',src:'من رسم الكتاب · ص ٦٤',hit:(x,y)=>distSeg(x,y,P)},
+   {k:'s',name:'نقطة البداية ('+fmt(st.h)+' , '+fmt(st.k)+')',info:'عندها يبدأ المنحنى، ومنها نقرأ المجال x ≥ '+fmt(st.h)+' والمدى y ≥ '+fmt(st.k)+'.',src:'الكتاب: المجال x ≥ 2 ، المدى y ≥ 1 · ص ٦٤',hit:(x,y)=>Math.hypot(x-st.h,y-st.k)*.5},
+   {k:'p',name:'الدالة الأم y = √x',info:'منها نحصل على الدالة بالإزاحة: يمينًا بمقدار h وإلى أعلى بمقدار k.',src:'توضيح مضاف',hit:(x,y)=>st.parent?distSeg(x,y,P0):99}]},
+  quiz:[{q:'المس نقطة بداية منحنى y = √(x − 2) + 1',a:'s',setup:()=>preset(2,1,true)},
+        {q:'المس منحنى الدالة الأم y = √x',a:'p',setup:()=>{st.parent=true}},
+        {q:'الآن (b): y = √(x − 5) − 2 . المس النقطة التي يبدأ منها المنحنى.',a:'s',setup:()=>preset(5,-2,true)},
+        {q:'المس منحنى الدالة الناتجة عن إزاحة y = √x خمس وحدات يمينًا ووحدتين لأسفل.',a:'c',setup:()=>preset(5,-2,true)}],
+  controls(){return `
+   <div class="steps"><b>من الكتاب:</b> <span class="m">y = √(x − 2) + 1</span> ، المجال <span class="m">x ≥ 2</span> ، المدى <span class="m">y ≥ 1</span><br>(b) المعادلة الناتجة عن الإزاحة: <span class="m">y = √(x − 5) − 2</span></div>
+   <div class="btns" style="margin:10px 0"><button class="mb" id="pa"><span class="m">(a)&nbsp; √(x − 2) + 1</span></button><button class="mb" id="pb"><span class="m">(b)&nbsp; √(x − 5) − 2</span></button><button class="mb" id="p0">الدالة الأم&nbsp;<span class="m">√x</span></button></div>
+   <div class="ctl"><label>إزاحة أفقية <span class="m">h</span><span id="hv"></span></label><input type="range" id="h" min="-1" max="6" step="0.5"></div>
+   <div class="ctl"><label>إزاحة رأسية <span class="m">k</span><span id="kv"></span></label><input type="range" id="k" min="-3" max="3" step="0.5"></div>
+   <div class="chk"><input type="checkbox" id="c1"><i style="background:${C.faint}"></i> الدالة الأم <span class="m">y = √x</span></div>
+   <div class="chk"><input type="checkbox" id="c2"><i style="background:${C.ref}"></i> تظليل المجال</div>
+   <div class="chk"><input type="checkbox" id="c3"><i style="background:#e07a1f"></i> تظليل المدى</div>`},
+  bind(){$('#h').oninput=e=>{st.h=+e.target.value;st.anim=0;sync()};$('#k').oninput=e=>{st.k=+e.target.value;st.anim=0;sync()};
+   $('#pa').onclick=()=>preset(2,1);$('#pb').onclick=()=>preset(5,-2);$('#p0').onclick=()=>preset(0,0);
+   [['c1','parent'],['c2','dom'],['c3','ran']].forEach(([i,k])=>$('#'+i).onchange=e=>{st[k]=e.target.checked;sync()});sync()},
+  readout(){return `<div><span class="m">${eq()}</span></div><div>المجال: <span class="m">x ≥ ${fmt(st.h)}</span> · المدى: <span class="m">y ≥ ${fmt(st.k)}</span></div>
+   <div style="font-size:12px;color:#7a6f86">${shiftTxt()}</div>`},
+  st
+ };
+ function eq(){const h=st.h,k=st.k;const hs=h===0?'x':h>0?`x − ${fmt(h)}`:`x + ${fmt(-h)}`;const ks=k===0?'':k>0?` + ${fmt(k)}`:` − ${fmt(-k)}`;return `y = √(${hs})${ks}`}
+ function shiftTxt(){const h=st.h,k=st.k,a=[];if(h)a.push(`${fmt(Math.abs(h))} ${h>0?'يمينًا':'يسارًا'}`);if(k)a.push(`${fmt(Math.abs(k))} ${k>0?'لأعلى':'لأسفل'}`);return a.length?'إزاحة الدالة الأم: '+a.join(' و '):'هذه هي الدالة الأم'}
+ function preset(h,k,instant){if(instant){st.h=h;st.k=k;st.anim=0;sync();return}st.from={h:st.h,k:st.k};st.to={h,k};st.anim=.001}
+}
+
+/* ============ PAGE + HOTSPOTS ============ */
+const models=[Model1(),Model2()];
+let sync=()=>{};
+const page=$('#page'),stage=$('#stage'),zoomer=$('#zoomer');$('#pimg').src=PAGE_IMG;
+models.forEach(m=>{const [x0,y0,x1,y1]=m.box,d=document.createElement('div');d.className='hs';d.dataset.m=m.id;
+ Object.assign(d.style,{left:x0/IW*100+'%',top:y0/IH*100+'%',width:(x1-x0)/IW*100+'%',height:(y1-y0)/IH*100+'%'});
+ const c=document.createElement('canvas');d.appendChild(c);const b=document.createElement('span');b.className='badge';b.textContent='تفاعلي';if(m.id==='g2'){b.style.top='3px';b.style.left='38%'}d.appendChild(b);page.appendChild(d);m.el=d;m.cv=c});
+let pw=0,ph=0;
+function layout(){const sw=stage.clientWidth,sh=stage.clientHeight;pw=Math.floor(Math.min(sw-14,(sh-14)*IW/IH));ph=Math.round(pw*IH/IW);
+ page.style.width=pw+'px';page.style.height=ph+'px';zoomer.style.left=Math.round((sw-pw)/2)+'px';zoomer.style.top=Math.round((sh-ph)/2)+'px';
+ const dpr=Math.min(2.5,(devicePixelRatio||1)*1.3);
+ models.forEach(m=>{const [x0,y0,x1,y1]=m.box;m.cv.width=Math.round((x1-x0)/IW*pw*dpr*Z.z**.5);m.cv.height=Math.round((y1-y0)/IH*ph*dpr*Z.z**.5)});setZoom(1,0,0)}
+/* zoom */
+const Z={z:1,tx:0,ty:0};
+function clampT(z,tx,ty){const sw=stage.clientWidth,sh=stage.clientHeight,bx=zoomer.offsetLeft,by=zoomer.offsetTop,W=pw*z,H=ph*z;
+ tx=W<=sw?(sw-W)/2-bx:Math.min(-bx,Math.max(sw-bx-W,tx));ty=H<=sh?(sh-H)/2-by:Math.min(-by,Math.max(sh-by-H,ty));return [tx,ty]}
+function setZoom(z,tx,ty,anim){z=cl(z,1,4);[tx,ty]=z===1?[0,0]:clampT(z,tx,ty);const old=Z.z;Z.z=z;Z.tx=tx;Z.ty=ty;zoomer.classList.toggle('anim',!!anim);
+ zoomer.style.transform=z===1?'':`translate(${tx}px,${ty}px) scale(${z})`;$('#bZoom').classList.toggle('on',z>1);
+ const zl=$('#zlab');zl.textContent=Math.round(z*100)+'%';zl.style.opacity=z>1?1:0;clearTimeout(zl._t);zl._t=setTimeout(()=>zl.style.opacity=0,900);
+ if(Math.abs(Math.log(z/(Z.lastRes||1)))>.4){Z.lastRes=z;const dpr=Math.min(3,(devicePixelRatio||1)*1.3*Math.sqrt(z));models.forEach(m=>{const [x0,y0,x1,y1]=m.box;m.cv.width=Math.round((x1-x0)/IW*pw*dpr);m.cv.height=Math.round((y1-y0)/IH*ph*dpr)})}}
+function zoomAt(z,cx,cy,anim){const r=stage.getBoundingClientRect(),px=cx-r.left,py=cy-r.top,bx=zoomer.offsetLeft,by=zoomer.offsetTop,qx=(px-bx-Z.tx)/Z.z,qy=(py-by-Z.ty)/Z.z;z=cl(z,1,4);setZoom(z,px-bx-qx*z,py-by-qy*z,anim)}
+$('#bZoom').onclick=()=>{const r=stage.getBoundingClientRect();zoomAt(Z.z>=2.9?1:Z.z<1.9?2:3,r.left+r.width/2,r.top+r.height/2,true)};
+stage.addEventListener('wheel',e=>{e.preventDefault();if(e.ctrlKey)zoomAt(Z.z*Math.exp(-e.deltaY*.01),e.clientX,e.clientY);else if(Z.z>1)setZoom(Z.z,Z.tx-e.deltaX,Z.ty-e.deltaY)},{passive:false});
+const P=new Map();let G=null,lastTap=0,lastXY=[0,0];
+stage.addEventListener('pointerdown',e=>{try{stage.setPointerCapture(e.pointerId)}catch(_){}P.set(e.pointerId,{x:e.clientX,y:e.clientY});
+ if(P.size===2){const [a,b]=[...P.values()],r=stage.getBoundingClientRect(),mx=(a.x+b.x)/2,my=(a.y+b.y)/2;G={mode:'pinch',d0:Math.hypot(a.x-b.x,a.y-b.y)||1,z0:Z.z,q:[(mx-r.left-zoomer.offsetLeft-Z.tx)/Z.z,(my-r.top-zoomer.offsetTop-Z.ty)/Z.z]};return}
+ G={mode:'pending',x:e.clientX,y:e.clientY,tx:Z.tx,ty:Z.ty,tgt:e.target}});
+stage.addEventListener('pointermove',e=>{if(!P.has(e.pointerId)||!G)return;P.set(e.pointerId,{x:e.clientX,y:e.clientY});
+ if(G.mode==='pinch'&&P.size>=2){const [a,b]=[...P.values()],r=stage.getBoundingClientRect(),z=cl(G.z0*Math.hypot(a.x-b.x,a.y-b.y)/G.d0,1,4);setZoom(z,(a.x+b.x)/2-r.left-zoomer.offsetLeft-G.q[0]*z,(a.y+b.y)/2-r.top-zoomer.offsetTop-G.q[1]*z);return}
+ const dx=e.clientX-G.x,dy=e.clientY-G.y;if(G.mode==='pending'&&Math.hypot(dx,dy)>10)G.mode=Z.z>1?'pan':'none';if(G.mode==='pan')setZoom(Z.z,G.tx+dx,G.ty+dy)});
+function up(e){if(!P.has(e.pointerId))return;P.delete(e.pointerId);if(!G)return;if(G.mode==='pinch'){if(!P.size)G=null;else{const [a]=[...P.values()];G={mode:'pan',x:a.x,y:a.y,tx:Z.tx,ty:Z.ty}}return}
+ if(P.size)return;const g=G;G=null;if(g.mode!=='pending'||e.type!=='pointerup')return;const now=performance.now();
+ if(now-lastTap<320&&Math.hypot(e.clientX-lastXY[0],e.clientY-lastXY[1])<30){clearTimeout(up._t);zoomAt(Z.z>1?1:2.2,e.clientX,e.clientY,true);lastTap=0;return}
+ lastTap=now;lastXY=[e.clientX,e.clientY];const h=g.tgt.closest&&g.tgt.closest('.hs');if(h){clearTimeout(up._t);up._t=setTimeout(()=>openModal(h.dataset.m),330)}}
+stage.addEventListener('pointerup',up);stage.addEventListener('pointercancel',up);document.addEventListener('gesturestart',e=>e.preventDefault());
+/* drawer */
+const drawer=$('#drawer');const tog=o=>{drawer.classList.toggle('open',o);$('#scrim').classList.toggle('on',o)};
+$('#bModels').onclick=()=>tog(!drawer.classList.contains('open'));$('#scrim').onclick=()=>tog(false);
+$('#dlist').innerHTML=models.map(m=>`<div class="it" data-m="${m.id}"><span>${m.title}<span class="sub">${m.sub}</span></span><span class="pg">ص ٦٤</span></div>`).join('');
+$('#dlist').onclick=e=>{const it=e.target.closest('.it');if(it){tog(false);setTimeout(()=>openModal(it.dataset.m),300)}};
+setTimeout(()=>{$('#hint').style.opacity=0},8000);
+
+/* ============ MODAL ============ */
+const modal=$('#modal'),card=$('#mcard'),mc=$('#mc'),mctx=mc.getContext('2d'),info=$('#info'),panel=$('#mpanel');let cur=null,qs=null;
+function fr(){const m=innerWidth<820||innerWidth/innerHeight<1;const w=m?innerWidth-12:Math.min(innerWidth-40,1240),h=m?innerHeight-12:Math.min(innerHeight-40,800);return {x:(innerWidth-w)/2,y:(innerHeight-h)/2,w,h}}
+function place(){const r=fr();Object.assign(card.style,{left:r.x+'px',top:r.y+'px',width:r.w+'px',height:r.h+'px'});return r}
+function sizeMC(){const r=$('#mview').getBoundingClientRect(),d=Math.min(2,devicePixelRatio||1);mc.width=Math.round(r.width*d);mc.height=Math.round(r.height*d)}
+function openModal(id){if(cur)return;const m=models.find(x=>x.id===id);cur=m;
+ $('#mtitle').innerHTML=`${m.title}<small>${m.sub} · رياضيات</small>`;modal.classList.add('on');const r=place();
+ panel.innerHTML='<h4>تحكّم في الرسم</h4><div id="ctl">'+m.controls()+'</div><div id="quizbox"></div><div class="ctl"><div class="hint" style="margin-top:12px">المس أي جزء من الرسم لترى اسمه ومعناه.</div></div>';
+ sync=()=>{const s=m.st;const set=(id,v)=>{const e=$('#'+id);if(e&&document.activeElement!==e)e.value=v};
+  if(m.id==='g1'){set('t',s.t);set('a',s.a);$('#tv').textContent=Math.round(s.t*100)+'%';$('#av').textContent=fmt(s.a);['b1','b2','lineYX','restrict'].forEach((k,i)=>$('#c'+(i+1)).checked=s[k])}
+  else{set('h',s.h);set('k',s.k);$('#hv').textContent=fmt(s.h);$('#kv').textContent=fmt(s.k);['parent','dom','ran'].forEach((k,i)=>$('#c'+(i+1)).checked=s[k])}
+  const ro=m.readout();if($('#readout')._h!==ro){$('#readout').innerHTML=ro;$('#readout')._h=ro}};
+ m.bind();info.style.display='none';$('#bookfig').style.display='none';$('#mFig').classList.remove('on');m.hl=null;qs=null;$('#mQuiz').classList.remove('on');
+ sizeMC();const hr=m.el.getBoundingClientRect();
+ card.animate([{transform:`translate(${hr.left-r.x}px,${hr.top-r.y}px) scale(${hr.width/r.w},${hr.height/r.h})`,opacity:.6},{transform:'none',opacity:1}],{duration:600,easing:'cubic-bezier(.2,.8,.2,1)'});
+ requestAnimationFrame(()=>modal.classList.add('show'))}
+async function closeModal(){if(!cur)return;const r=fr(),hr=cur.el.getBoundingClientRect();modal.classList.remove('show');
+ await card.animate([{transform:'none',opacity:1},{transform:`translate(${hr.left-r.x}px,${hr.top-r.y}px) scale(${hr.width/r.w},${hr.height/r.h})`,opacity:.3}],{duration:450,easing:'cubic-bezier(.5,0,.3,1)'}).finished;
+ modal.classList.remove('on');cur=null;sync=()=>{}}
+$('#mClose').onclick=closeModal;addEventListener('keydown',e=>{if(e.key==='Escape')closeModal()});
+$('#mFig').onclick=()=>{const b=$('#bookfig'),on=b.style.display!=='block';b.style.display=on?'block':'none';$('#mFig').classList.toggle('on',on);$('#readout').style.visibility=on?'hidden':'';
+ if(on){$('#bfimg').src=FIG[cur.id];$('#bftitle').textContent='الرسم كما في الكتاب · ص ٦٤'}};
+addEventListener('resize',()=>{layout();if(cur){place();sizeMC()}});
+/* picking */
+let pd=null;mc.addEventListener('pointerdown',e=>pd=[e.clientX,e.clientY]);
+mc.addEventListener('pointerup',e=>{if(!pd||!cur||!cur.G)return;if(Math.hypot(e.clientX-pd[0],e.clientY-pd[1])>8)return;
+ const r=mc.getBoundingClientRect(),d=mc.width/r.width,x=cur.G.ix((e.clientX-r.left)*d),y=cur.G.iy((e.clientY-r.top)*d);
+ let best=null,bd=.5;for(const p of cur.parts()){const v=p.hit(x,y);if(v<bd){bd=v;best=p}}
+ if(qs&&!qs.done){answer(best);return}
+ if(!best){info.style.display='none';cur.hl=null;return}show(best)});
+function hlPart(p,color){cur.hl=(G,u)=>{const {ctx}=G;ctx.save();ctx.globalAlpha=.35;ctx.strokeStyle=color;ctx.lineWidth=u*.45;ctx.lineCap='round';
+ctx.restore();
+ ctx.save();ctx.fillStyle=color;ctx.globalAlpha=.16;const step=u*.25;for(let px=0;px<G.W;px+=step)for(let py=0;py<G.H;py+=step){if(p.hit(G.ix(px),G.iy(py))<.18){ctx.beginPath();ctx.arc(px,py,step*.75,0,7);ctx.fill()}}ctx.restore()}}
+function show(p){hlPart(p,'#c4237f');info.innerHTML=`<button class="x">×</button><b>${p.name}</b><div class="m" style="white-space:normal;font-style:normal;font-family:Cairo;font-size:14px;direction:rtl">${p.info}</div><span class="src">${p.src}</span>`;info.style.display='block';info.querySelector('.x').onclick=()=>{info.style.display='none';cur.hl=null}}
+$('#mQuiz').onclick=()=>{if(qs){endQ();return}qs={i:0,s:0,done:false};$('#mQuiz').classList.add('on');$('#ctl').style.display='none';info.style.display='none';rq()};
+function rq(){const Q=cur.quiz,box=$('#quizbox');cur.hl=null;
+ if(qs.i>=Q.length){qs.done=true;box.innerHTML=`<div class="quiz"><div class="qn">انتهى الاختبار</div><div class="score">${AD(qs.s)} / ${AD(Q.length)}</div><div class="btns"><button class="mb" id="qa">أعد الاختبار</button><button class="mb pri" id="qe">العودة للرسم</button></div></div>`;$('#qa').onclick=()=>{qs={i:0,s:0,done:false};rq()};$('#qe').onclick=endQ;return}
+ const it=Q[qs.i];it.setup&&it.setup();sync();box.innerHTML=`<div class="quiz"><div class="qn">اختبرني · السؤال ${AD(qs.i+1)} من ${AD(Q.length)} · الدرجة ${AD(qs.s)}</div><div class="q">${it.q}</div><div class="fb" id="qfb">المس الإجابة على الرسم</div></div>`}
+function answer(p){if(qs.lock)return;const it=cur.quiz[qs.i],ok=p&&p.k===it.a,fb=$('#qfb');qs.lock=1;const right=cur.parts().find(x=>x.k===it.a);
+ if(ok){qs.s++;fb.className='fb ok';fb.textContent='إجابة صحيحة ✓';hlPart(right,'#2e9e5b')}else{fb.className='fb bad';fb.textContent='ليست هذه. الصحيح: '+right.name;hlPart(right,'#d4473f')}
+ setTimeout(()=>{qs.lock=0;qs.i++;rq()},1700)}
+function endQ(){qs=null;$('#mQuiz').classList.remove('on');$('#quizbox').innerHTML='';$('#ctl').style.display='';cur.hl=null}
+
+/* ============ LOOP ============ */
+let last=performance.now(),acc=0,T0=performance.now();
+function frame(now){requestAnimationFrame(frame);const dt=Math.min(.05,(now-last)/1000);last=now;
+ if(cur){cur.focus(mctx,mc.width,mc.height,dt);return}
+ acc+=dt;if(acc<1/30)return;acc=0;const t=(now-T0)/1000;
+ models.forEach(m=>{const c=m.cv;m.inPage(c.getContext('2d'),c.width,c.height,t)})}
+(async()=>{try{await Promise.race([document.fonts.ready,new Promise(r=>setTimeout(r,2000))])}catch(e){}layout();requestAnimationFrame(frame)})();
+window.__mp={openModal,closeModal,models,setZoom};
+</script>
+</body>
+</html>
