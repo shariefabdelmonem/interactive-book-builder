@@ -1,6 +1,6 @@
 ---
 name: interactive-book-builder
-description: Turn a school book or worksheet (PDF or page photos, one page or many) into an interactive flipbook: placed answers, animated science, geography motion graphics, live math graphs, offline HTML.
+description: Turn a school book or worksheet (PDF or page photos, one page or many) into an interactive flipbook with placed handwritten answers, animated science models, geography motion graphics, live math graphs and a single offline HTML file. Use when the user sends a PDF or page photos of a school book/worksheet and asks to make it interactive, answer it, animate it, or says كتاب تفاعلي / حوّل الكتاب / اعمل إجابات للورق ده / flipbook / interactive book.
 ---
 
 # Interactive Book Builder
@@ -9,7 +9,22 @@ Turns any school material — a whole PDF book, a few pages, or a single page ph
 
 Triggers: "حوّل الكتاب ده لكتاب تفاعلي", "اعمل البوكليت ده بنفس الطريقة", "اعمل إجابات للورق ده", "جرّب على صورة", "كتاب تفاعلي", "flipbook", or a PDF / page photo with a request to make it interactive.
 
-Reference code lives in the skill repo (github: interactive-book-builder): `scripts/` (extract.py, image_to_page.py, imgtools.py, blocks.py, zones.py, build_offline.py), `templates/` (answers-flipbook.html, science-3d-flipbook.html, math-graphs-page.html, cover.html), `examples/` (two full worksheet answer specs). If the repo is available, start from it; otherwise rebuild from the rules below.
+## Setup (do this once, before anything else)
+All paths below are relative to this skill's folder (`SKILL.md` sits next to `scripts/`, `templates/`, `examples/`). If the folder is not available, rebuild from the rules in this file.
+```
+pip install -r requirements.txt          # pymupdf, opencv, pytesseract, numpy, Pillow, playwright
+tesseract --version                       # only needed for photos/scans; Arabic books also need the "ara" language pack
+```
+Work in a fresh book folder and tell every script where it is: `export BOOK_DIR=/path/to/book` (all scripts default to the current folder).
+
+## Pipeline (follow in order; each step prints what it made)
+1. `python3 scripts/extract.py book.pdf $BOOK_DIR` → `img/p1..pN.jpg`, `all.json` (photos: `scripts/image_to_page.py in.jpg $BOOK_DIR/img/p1.jpg`, then build `all.json` from OCR as in §1).
+2. Look at every `img/p*.jpg` yourself and run `python3 scripts/blocks.py 1 2 3` to see detected questions/options/blanks. Pick a mode per page (§0).
+3. Answers mode: write a spec like `examples/grade10_answers.py` (use `from zones import *`: `mcq`, `fill`, `pblank`, `seg`, `Z`, `T`, `C`); it must end by writing `$BOOK_DIR/data.json`.
+4. Make the cover → `img/p0.jpg` (§7).
+5. `python3 scripts/make_index.py $BOOK_DIR $BOOK_DIR/data.json "Book title" [toc.json]` → `$BOOK_DIR/index.html`. Science/Maths pages start from `templates/science-3d-flipbook.html` / `templates/math-graphs-page.html` copied to `$BOOK_DIR/index.html` and edited.
+6. Test (§8), publish (§9), then `python3 scripts/build_offline.py $BOOK_DIR book-offline.html 0 N`.
+Do not skip a step or invent data: if a script fails, read the error, fix the input, rerun — never hand-write coordinates you did not measure.
 
 ## 0. Before building — always
 1. Read everything first: render every page and look at it, extract text with coordinates. Never guess content.
@@ -25,7 +40,7 @@ Reference code lives in the skill repo (github: interactive-book-builder): `scri
 
 ## 1. Input
 ### PDF
-`scripts/extract.py book.pdf BOOK_DIR` → `img/p{n}.jpg` at 160 dpi + `all.json` (lines and blanks with boxes in PDF points). All overlay coordinates are PDF points; the overlay SVG uses `viewBox="0 0 595.32 841.92"`.
+`scripts/extract.py book.pdf BOOK_DIR` → `BOOK_DIR/img/p{n}.jpg` at 160 dpi + `BOOK_DIR/all.json` (lines and blanks with boxes in PDF points). All overlay coordinates are PDF points; the overlay SVG uses `viewBox="0 0 595.32 841.92"`. It prints the real page size: if it is not A4 (595.32×841.92), change `PW`/`PH` in the template.
 ### Images (phone photos, scans, screenshots)
 - Run `scripts/image_to_page.py in out.jpg`: finds the paper quad, warps it flat, auto-contrasts. Check the result visually; if no quad was found and the image is already clean (scan/screenshot), use it as is.
 - Order multiple images by page number (filename or printed number) and confirm the order with the user if unclear.
@@ -75,7 +90,7 @@ Maps/landforms become animated scenes in place: rising relief, plains, valleys, 
 Render HTML (1323×1871) with Playwright → `img/p0.jpg` (templates/cover.html): school logo extracted from the source header, subject, grade tag, title, year, Arabic title line, "Interactive Edition" badge, Cairo. Different colour scheme per book/grade.
 
 ## 8. Test before delivering
-Playwright + system Chrome (`--use-angle=swiftshader` for WebGL), CDN routed to local copies:
+Playwright (its bundled Chromium, or system Chrome if present; launch with `--use-angle=swiftshader` for WebGL). Run the offline file with the network disabled (`offline: true`) and assert no page errors and no external requests:
 - Screenshot every spread with all answers shown and read them; fix overlaps, misplacement, crowding, reversed RTL numbers.
 - Mobile 390×844 with real touch via CDP `Input.dispatchTouchEvent`: pinch, pan, double-tap, swipe flip, per-page button.
 - Open every model/graph, move every control, run one quiz tap.
@@ -83,7 +98,7 @@ Playwright + system Chrome (`--use-angle=swiftshader` for WebGL), CDN routed to 
 
 ## 9. Deliver
 - Publish the folder as an artifact; republish the same slug for updates.
-- `scripts/build_offline.py`: images as base64, Cairo + Caveat inlined from `@fontsource/*`, three.js inlined if used; verify with the network disabled (no external requests, fonts loaded). Explain opening on PC, phone (WhatsApp/Teams/Files) and offline in class.
+- `scripts/build_offline.py BOOK_DIR OUT.html FIRST LAST`: images as base64, Cairo + Caveat inlined from `@fontsource/*` (auto `npm i` on first run), three.js inlined if the page uses it; it asserts no external references are left. Verify with the network disabled (no external requests, fonts loaded). Explain opening on PC, phone (WhatsApp/Teams/Files) and offline in class.
 - Offer a student version without the answer key.
 - Final message: what was built, counts, flagged items to review, and that answers were solved without an official key unless one was given.
 

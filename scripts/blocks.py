@@ -1,5 +1,6 @@
-import json,re
-D=json.load(open('all.json'))
+import json,re,os
+BOOK=os.environ.get('BOOK_DIR','.')
+D=json.load(open(f'{BOOK}/all.json'))
 HDR=re.compile(r'^([A-D]\.|[A-D]\))\s*(Circle|Put|Choose|Fill|Correct|Rewrite|Complete|Read the text|Write|Answer|Match)',re.I)
 NUM=re.compile(r'^\d+\s*[\.\-\)]\s*\S')
 OPT=re.compile(r'^[A-D]\.\s*\S')

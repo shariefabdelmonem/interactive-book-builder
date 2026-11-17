@@ -1,7 +1,8 @@
-import json, re, textwrap
+import json, re, textwrap, sys, os
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'scripts'))
 from blocks import blocks
 from imgtools import hlines
-D = json.load(open('all.json'))
+D = json.load(open(os.path.join(os.environ.get('BOOK_DIR', '.'), 'all.json')))
 B = {}
 def blk(n):
     if n not in B: B[n] = blocks(n)
@@ -216,6 +217,6 @@ Z(32, 'Topic A → model on page 34', [T(390, None, 98, 'Model story: page 34 �
 Z(32, 'Topic B → model on page 33', [T(330, None, 668, 'Model essay: page 33 →', 15)], 'see page 33', extra=[50, 440, 560, 650])
 
 out = {str(k): v for k, v in sorted(ZONES.items())}
-json.dump(out, open('/home/claude/g11book/data.json', 'w'), ensure_ascii=False)
+json.dump(out, open(os.path.join(os.environ.get('BOOK_DIR', '.'), 'data.json'), 'w'), ensure_ascii=False)
 print({k: len(v) for k, v in out.items()}, sum(len(v) for v in out.values()), 'zones')
 print('lines33', len(L33), 'essay lines', len(e33), '| lines34', len(L34), 'story lines', len(e34))

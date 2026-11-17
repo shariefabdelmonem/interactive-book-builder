@@ -1,7 +1,8 @@
-import json, re, textwrap
+import json, re, textwrap, os
+BOOK = os.environ.get('BOOK_DIR', '.')
 from blocks import blocks
 from imgtools import hlines
-D = json.load(open('all.json'))
+D = json.load(open(f'{BOOK}/all.json'))
 B = {}
 def blk(n):
     if n not in B: B[n] = blocks(n)

@@ -1,0 +1,7 @@
+pymupdf
+opencv-python-headless
+pytesseract
+numpy
+Pillow
+playwright
+# system: tesseract-ocr (+ tesseract-ocr-ara for Arabic books)

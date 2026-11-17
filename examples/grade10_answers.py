@@ -1,5 +1,9 @@
 import json, textwrap
-exec(open('/home/claude/g10/helpers.py').read())
+import sys, os
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'scripts'))
+from blocks import blocks
+from imgtools import hlines, ocr
+from zones import *   # Z, T, C, mcq, fill, pblank, seg, on_blank, ZONES
 
 def lst(n, items, prefix=''):
     for bi, t in items: fill(n, bi, t, label=prefix + str(bi + 1 if not prefix else bi % 6 + 1))
@@ -182,5 +186,5 @@ Z(28, 'Topic A → model on page 29', [T(390, None, 160, 'Model email: page 29 �
 Z(28, 'Topic B → model on page 30', [T(390, None, 450, 'Model article: page 30 →', 15)], 'see page 30', extra=[50, 440, 560, 690])
 
 out = {str(k): v for k, v in sorted(ZONES.items())}
-json.dump(out, open('/home/claude/g10book/data.json', 'w'), ensure_ascii=False)
+json.dump(out, open(os.path.join(os.environ.get('BOOK_DIR', '.'), 'data.json'), 'w'), ensure_ascii=False)
 print({k: len(v) for k, v in out.items()}, sum(len(v) for v in out.values()), 'zones', '| L29', len(L29), 'L30', len(L30), 'L7', len(L7), 'L4', len(left), len(right), 'L25', len(L25), 'L27', len(L27))

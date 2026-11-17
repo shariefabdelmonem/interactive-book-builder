@@ -31,7 +31,9 @@ scripts/image_to_page.py         phone photo → flattened, cleaned page
 scripts/imgtools.py              underline/grid detection + OCR helpers
 scripts/blocks.py                question-block detection
 scripts/zones.py                 answer-zone helpers (mcq, fill, rewrite…)
-scripts/build_offline.py         inline images + fonts into one offline file
+scripts/make_index.py            fill the worksheet template -> index.html
+scripts/build_offline.py         inline images + fonts (+ three.js) into one offline file
+requirements.txt                 python deps
 templates/answers-flipbook.html  worksheet flipbook ({{TITLE}}, {{NPAGES}}, {{TOC}}, /*DATA*/)
 templates/science-3d-flipbook.html  physics example with three.js models
 templates/math-graphs-page.html  live graph page example
@@ -41,6 +43,6 @@ examples/grade11_answers.py      full answer spec, Grade 11 English worksheets
 ```
 
 ## Install
-Upload `SKILL.md` as a skill in Claude, or add this folder to your skills directory. Then send any PDF or page photo and say: «حوّله لكتاب تفاعلي».
+Add this whole folder to your skills directory (or zip it and upload it as a skill) — `SKILL.md` alone is not enough, it needs `scripts/` and `templates/`. Then `pip install -r requirements.txt`. Then send any PDF or page photo and say: «حوّله لكتاب تفاعلي».
 
 Built by Sharief Abdelmonem — #ai_with_sharief

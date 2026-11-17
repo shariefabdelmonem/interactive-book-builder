@@ -1,9 +1,10 @@
-import numpy as np, json, pytesseract
+import numpy as np, json, os
 from PIL import Image
-S=72/160  # px -> pt
+BOOK=os.environ.get('BOOK_DIR','.')   # folder made by extract.py
+S=72/160  # px -> pt (extract.py renders at 160 dpi)
 _cache={}
 def arr(n):
-    if n not in _cache: _cache[n]=np.asarray(Image.open(f'BOOK_DIR/img/p{n}.jpg').convert('L')).astype(int)
+    if n not in _cache: _cache[n]=np.asarray(Image.open(f'{BOOK}/img/p{n}.jpg').convert('L')).astype(int)
     return _cache[n]
 def hlines(n,box=None,minlen=40,dark=150):
     a=arr(n);H,W=a.shape
@@ -26,11 +27,13 @@ def hlines(n,box=None,minlen=40,dark=150):
         out.append(s)
     out.sort(key=lambda s:(round(s[2]/4),s[0]))
     return [[round(float(s[0])*S,1),round(float(s[1])*S,1),round(float(s[2])*S,1)] for s in out]
-def ocr(n,box=None):
-    im=Image.open(f'BOOK_DIR/img/p{n}.jpg')
+def ocr(n,box=None,lang='eng'):
+    try: import pytesseract
+    except ImportError: raise SystemExit('pip install pytesseract and install the tesseract-ocr system package')
+    im=Image.open(f'{BOOK}/img/p{n}.jpg')
     if box: x0,y0,x1,y1=[int(v/S) for v in box]; im=im.crop((x0,y0,x1,y1))
     else: x0=y0=0
-    dd=pytesseract.image_to_data(im,output_type=pytesseract.Output.DICT)
+    dd=pytesseract.image_to_data(im,lang=lang,output_type=pytesseract.Output.DICT)
     W=[]
     for i,t in enumerate(dd['text']):
         if t.strip(): W.append([round((dd['left'][i]+x0)*S,1),round((dd['top'][i]+y0)*S,1),round((dd['left'][i]+dd['width'][i]+x0)*S,1),round((dd['top'][i]+dd['height'][i]+y0)*S,1),t])
